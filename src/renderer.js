@@ -6,93 +6,25 @@
  * https://electronjs.org/docs/tutorial/application-architecture#main-and-renderer-processes
  */
 
+import { resolve } from 'path'
 import './index.css'
+const { ipcRenderer } = require('electron')
 const { Network } = require('vis-network/peer/esm/vis-network')
 const { DataSet } = require('vis-data/peer/esm/vis-data')
+const fs = require('fs')
+const readline = require('readline')
+const csv = require('csv-parser')
 
-const nodes = new DataSet([
-  {
-    id: 1,
-    label: 'IBM',
-    group: 'root',
-  },
-  {
-    id: 2,
-    label: 'IBM(R) SoftLayer One core All Existing',
-    group: 'node',
-  },
-  {
-    id: 12,
-    label: 'IBM(R) SoftLayer One core All Existing',
-    group: 'node',
-  },
-  {
-    id: 3,
-    label: 'IBM SoftLayer 6e17f5dc-e8a5-4d90-722f-8d246392',
-    group: 'partition',
-  },
-  {
-    id: 13,
-    label: 'IBM SoftLayer 6e17f5dc-e8a5-4d90-723f-8d246392',
-    group: 'partition',
-  },
-  {
-    id: 4,
-    label: 'IBM SoftLayer 6e17f5dc-e8a5-4d90-722f-8d246392',
-    group: 'partition',
-  },
-  {
-    id: 5,
-    label: 'IBM db2',
-    group: 'software_component',
-  },
-  {
-    id: 15,
-    label: 'IBM db2',
-    group: 'software_component',
-  },
-  {
-    id: 6,
-    label: 'IBM DB2 Advanced Enterprise Server Edition Pro',
-    group: 'software_component',
-  },
-  {
-    id: 7,
-    label: 'IBM DB2 Content Manager',
-    group: 'software_product',
-  },
-  {
-    id: 8,
-    label: 'IBM DB2 Content Creator',
-    group: 'software_product',
-  },
-  {
-    id: 18,
-    label: 'IBM DB2 Content Creator',
-    group: 'software_product',
-  },
-])
-const edges = new DataSet([
-  { from: 1, to: 2 },
-  { from: 2, to: 3 },
-  { from: 2, to: 4 },
-  { from: 4, to: 6 },
-  { from: 6, to: 7 },
-  { from: 6, to: 8 },
-  { from: 3, to: 5 },
-  { from: 5, to: 7 },
-  { from: 5, to: 8 },
-  { from: 1, to: 12 },
-  { from: 12, to: 13 },
-  { from: 13, to: 15 },
-  { from: 15, to: 8 },
-  { from: 15, to: 18 },
-])
 const container = document.getElementById('mynetwork')
+
+const nodes = new DataSet([])
+const edges = new DataSet([])
+
 const data = {
   nodes: nodes,
   edges: edges,
 }
+
 const options = {
   height: '100%',
   width: '100%',
@@ -106,21 +38,99 @@ const options = {
     smooth: false,
     arrows: {
       to: {
-        enabled: true,
+        enabled: false,
         type: 'arrow',
       },
+    },
+    chosen: true,
+    color: {
+      color: '#bbbbbb',
+      highlight: '#0000FF',
+      inherit: 'from',
+      opacity: 0.5,
     },
   },
   physics: {
     enabled: false,
   },
+
   layout: {
     improvedLayout: true,
     hierarchical: {
       direction: 'UD',
-      nodeSpacing: 500,
-      sortMethod: 'directed', //hubsize, directed.
+      nodeSpacing: 350,
+      sortMethod: 'hubsize',
     },
   },
 }
+
 const network = new Network(container, data, options)
+
+network.on('click', function (properties) {
+  const ids = properties.nodes
+  if (ids.length === 1) {
+    const clickedNode = nodes.get(ids[0])
+    console.log('clicked:', clickedNode)
+  }
+})
+
+function loadFile(event) {
+  return new Promise((resolve) => {
+    fs.createReadStream('test/data.csv')
+      .pipe(csv())
+      .on('data', (row) => {
+        margeToThree(row)
+      })
+      .on('end', () => {
+        console.log('CSV file successfully processed')
+      })
+
+    resolve()
+  })
+}
+
+const margeToThree = (row) => {
+  const NODE_TYPES = ['Server Name', 'Computer', 'Component', 'Product Name']
+
+  for (const nodeTypeID of NODE_TYPES.keys()) {
+    //top level nodes dont have parents
+    if (nodeTypeID === 0) {
+      const label = row[NODE_TYPES[nodeTypeID]]
+      if (nodes.get(label) == null) {
+        nodes.add({
+          id: label,
+          label: label,
+          group: nodeTypeID,
+          level: nodeTypeID,
+        })
+      }
+    } else {
+      const parent = row[NODE_TYPES[nodeTypeID - 1]]
+      const label = row[NODE_TYPES[nodeTypeID]]
+      if (nodes.get(label) == null) {
+        nodes.add({
+          id: label,
+          label:
+            nodeTypeID === 3
+              ? `${label} (${row['Metric Quantity']} PVU)`
+              : label,
+          group: nodeTypeID,
+          level: nodeTypeID,
+        })
+      }
+
+      if (
+        network
+          .getConnectedEdges(parent)
+          .filter((element) => edges.get(element).to == label).length == 0
+      ) {
+        edges.add({
+          from: parent,
+          to: label,
+        })
+      }
+    }
+  }
+}
+
+loadFile()
