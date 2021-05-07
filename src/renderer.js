@@ -7,6 +7,7 @@
  */
 
 import { resolve } from 'path'
+import { easingFunctions } from 'vis-util'
 import './index.css'
 const { ipcRenderer } = require('electron')
 const { Network } = require('vis-network/peer/esm/vis-network')
@@ -76,20 +77,22 @@ network.on('click', function (properties) {
 
 function loadFile(event) {
   return new Promise((resolve) => {
+    let i = 0
     fs.createReadStream('test/data.csv')
       .pipe(csv())
       .on('data', (row) => {
-        margeToThree(row)
+        buildTree(row)
+        i++
+        console.log(i)
       })
       .on('end', () => {
         console.log('CSV file successfully processed')
+        resolve()
       })
-
-    resolve()
   })
 }
 
-const margeToThree = (row) => {
+const buildTree = (row) => {
   const NODE_TYPES = ['Server Name', 'Computer', 'Component', 'Product Name']
 
   for (const nodeTypeID of NODE_TYPES.keys()) {
@@ -133,4 +136,64 @@ const margeToThree = (row) => {
   }
 }
 
-loadFile()
+loadFile().then(() => {
+  for (const nodeId of nodes
+    .getIds()
+    .filter((id) => nodes.get(id).group === 3)) {
+    const p = document.createElement('p')
+    p.innerText = nodeId
+    p.addEventListener('click', (evt) => {
+      network.selectNodes([evt.target.innerText])
+      network.focus(evt.target.innerText, {
+        scale: 1,
+        animation: {
+          duration: 1000,
+          easingFunctions: 'easeInOutQuad',
+        },
+      })
+    })
+    searchResults.appendChild(p)
+  }
+})
+
+function debounce(func, timeout = 500) {
+  let timer
+  return (...args) => {
+    clearTimeout(timer)
+    timer = setTimeout(() => {
+      func.apply(this, args)
+    }, timeout)
+  }
+}
+
+const searchbar = document.getElementById('search')
+const searchResults = document.getElementById('search_result')
+searchbar.addEventListener(
+  'input',
+  debounce((evt) => {
+    const query = evt.target.value
+    const results = nodes.getIds().filter((element) => {
+      return (
+        element.toLowerCase().includes(query.toLowerCase()) &&
+        nodes.get(element).group === 3
+      )
+    })
+
+    searchResults.innerHTML = ''
+    for (const result of results) {
+      const p = document.createElement('p')
+      p.innerText = result
+      p.addEventListener('click', (evt) => {
+        network.selectNodes([evt.target.innerText])
+        network.focus(evt.target.innerText, {
+          scale: 1,
+          animation: {
+            duration: 1000,
+            easingFunctions: 'easeInOutQuad',
+          },
+        })
+      })
+      searchResults.appendChild(p)
+    }
+  })
+)

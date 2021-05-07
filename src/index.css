@@ -1,8 +1,3 @@
-/* http://meyerweb.com/eric/tools/css/reset/ 
-   v2.0 | 20110126
-   License: none (public domain)
-*/
-
 html,
 body,
 div,
@@ -107,6 +102,10 @@ section {
 }
 body {
   line-height: 1;
+  font-family: sans-serif;
+}
+* {
+  outline: none;
 }
 ol,
 ul {
@@ -128,14 +127,55 @@ table {
   border-spacing: 0;
 }
 body {
-  background-color: #f3f3f3;
+  background-color: #fff;
   width: 100%;
   height: 100%;
 }
-
-#mynetwork {
+.container {
+  display: flex;
   width: 100vw;
   height: 100vh;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+}
+#mynetwork {
+  background-color: #f3f3f3;
+  width: 70vw;
+  height: 90vh;
   outline: none;
   border: none;
+}
+.details {
+  text-align: center;
+  width: 25vw;
+  height: 90vh;
+  background-color: #f3f3f3;
+}
+.details #search {
+  margin-left: auto;
+  margin-right: auto;
+  width: 90%;
+  height: 1.4rem;
+  margin-top: 1rem;
+  border: 1px solid rgb(116, 116, 116);
+}
+.details #search_result {
+  text-align: left;
+  margin-left: auto;
+  margin-right: auto;
+  height: 30vh;
+  width: 90%;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  margin-top: 1rem;
+}
+.details #search_result p {
+  text-overflow: ellipsis;
+  padding: 0.3rem;
+}
+.details #search_result p:hover {
+  background-color: #096bdb;
+  color: white;
+  cursor: pointer;
 }
