@@ -139,7 +139,7 @@ const buildTree = (row) => {
 loadFile().then(() => {
   for (const nodeId of nodes
     .getIds()
-    .filter((id) => nodes.get(id).group === 3)) {
+    .filter((id) => nodes.get(id).group === 4)) {
     const p = document.createElement('p')
     p.innerText = nodeId
     p.addEventListener('click', (evt) => {
