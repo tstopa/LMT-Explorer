@@ -60,7 +60,7 @@ const options = {
     hierarchical: {
       direction: 'UD',
       nodeSpacing: 350,
-      sortMethod: 'hubsize',
+      sortMethod: 'directed',
     },
   },
 }
@@ -77,57 +77,57 @@ network.on('click', function (properties) {
 
 function loadFile(event) {
   return new Promise((resolve) => {
-    let i = 0
+    console.time('loading')
     fs.createReadStream('test/data.csv')
       .pipe(csv())
       .on('data', (row) => {
         buildTree(row)
-        i++
-        console.log(i)
       })
       .on('end', () => {
-        console.log('CSV file successfully processed')
+        nodes.add(_nodes)
+        edges.add(_edges)
+        console.timeEnd('loading')
         resolve()
       })
   })
 }
+const _edges = []
+const _nodes = []
 
 const buildTree = (row) => {
   const NODE_TYPES = ['Server Name', 'Computer', 'Component', 'Product Name']
-
   for (const nodeTypeID of NODE_TYPES.keys()) {
     //top level nodes dont have parents
     if (nodeTypeID === 0) {
       const label = row[NODE_TYPES[nodeTypeID]]
-      if (nodes.get(label) == null) {
-        nodes.add({
+      if (_nodes.filter((element) => element.id === label).length === 0) {
+        _nodes.push({
           id: label,
           label: label,
-          group: nodeTypeID,
+          group: nodeTypeID + 1,
           level: nodeTypeID,
         })
       }
     } else {
       const parent = row[NODE_TYPES[nodeTypeID - 1]]
       const label = row[NODE_TYPES[nodeTypeID]]
-      if (nodes.get(label) == null) {
-        nodes.add({
+      if (_nodes.filter((element) => element.id === label).length === 0) {
+        _nodes.push({
           id: label,
           label:
             nodeTypeID === 3
-              ? `${label} (${row['Metric Quantity']} PVU)`
+              ? label + ' (' + row['Metric Quantity'] + ' PVU)'
               : label,
-          group: nodeTypeID,
+          group: nodeTypeID + 1,
           level: nodeTypeID,
         })
       }
-
       if (
-        network
-          .getConnectedEdges(parent)
-          .filter((element) => edges.get(element).to == label).length == 0
+        _edges.filter(
+          (element) => element.from === parent && element.to == label
+        ).length === 0
       ) {
-        edges.add({
+        _edges.push({
           from: parent,
           to: label,
         })
@@ -139,7 +139,7 @@ const buildTree = (row) => {
 loadFile().then(() => {
   for (const nodeId of nodes
     .getIds()
-    .filter((id) => nodes.get(id).group === 3)) {
+    .filter((id) => nodes.get(id).group === 4)) {
     const p = document.createElement('p')
     p.innerText = nodeId
     p.addEventListener('click', (evt) => {
@@ -175,7 +175,7 @@ searchbar.addEventListener(
     const results = nodes.getIds().filter((element) => {
       return (
         element.toLowerCase().includes(query.toLowerCase()) &&
-        nodes.get(element).group === 3
+        nodes.get(element).group === 4
       )
     })
 
