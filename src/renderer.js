@@ -1,15 +1,16 @@
 import './index.css'
 const { Visualization } = require('./visualization')
-
 const container = document.getElementById('mynetwork')
 const searchbar = document.getElementById('search')
 const searchResults = document.getElementById('search_result')
+const { ipcRenderer } = require('electron')
 //create visualization instance
 const visualization = new Visualization(container)
 //load data from csv
-visualization.loadFromCsv('test/__data.csv').then(() => {
+visualization.loadFromCsv(ipcRenderer.sendSync('open-file')).then(() => {
   hydrateSearchResults(searchProducts(visualization.nodes))
 })
+
 const searchProducts = (nodes, query) => {
   if (query) {
     return nodes.filter(

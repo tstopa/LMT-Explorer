@@ -1,6 +1,5 @@
-const { app, BrowserWindow } = require('electron')
+const { app, BrowserWindow, dialog, ipcMain } = require('electron')
 const path = require('path')
-
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
   // eslint-disable-line global-require
@@ -20,7 +19,6 @@ const createWindow = () => {
 
   // and load the index.html of the app.
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY)
-
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
 }
@@ -38,7 +36,9 @@ app.on('window-all-closed', () => {
     app.quit()
   }
 })
-
+ipcMain.on('open-file', (evnt, args) => {
+  evnt.returnValue = dialog.showOpenDialogSync({ properties: ['openFile'] })[0]
+})
 app.on('activate', () => {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
