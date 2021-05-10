@@ -1,15 +1,34 @@
 import './index.css'
 const { Visualization } = require('./visualization')
+const { FileUpload } = require('./fileUpload')
 const container = document.getElementById('mynetwork')
 const searchbar = document.getElementById('search')
 const searchResults = document.getElementById('search_result')
 const { ipcRenderer } = require('electron')
+
+const handleFileUpload = (path) => {
+  if (path.split('.').pop() !== 'csv') {
+    return
+  }
+  document.getElementById('upload').style.display = 'none'
+  document.getElementById('visualization').style.display = 'flex'
+  visualization.loadFromCsv(path).then(() => {
+    hydrateSearchResults(searchProducts(visualization.nodes))
+  })
+}
+
+//create file upload instance
+const fileUpload = new FileUpload(
+  document.getElementById('upload_container'),
+  handleFileUpload
+)
+document.getElementById('file').addEventListener('input', (evt) => {
+  evt.preventDefault()
+  handleFileUpload(ipcRenderer.sendSync('open-file'))
+})
+
 //create visualization instance
 const visualization = new Visualization(container)
-//load data from csv
-visualization.loadFromCsv(ipcRenderer.sendSync('open-file')).then(() => {
-  hydrateSearchResults(searchProducts(visualization.nodes))
-})
 
 const searchProducts = (nodes, query) => {
   if (query) {
