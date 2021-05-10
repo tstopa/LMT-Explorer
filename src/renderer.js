@@ -5,14 +5,24 @@ const container = document.getElementById('mynetwork')
 const searchbar = document.getElementById('search')
 const searchResults = document.getElementById('search_result')
 const { ipcRenderer } = require('electron')
+const AdmZip = require('adm-zip')
+const uuid = require('uuid')
+const tempDirectory = require('temp-dir')
 
-const handleFileUpload = (path) => {
-  if (path.split('.').pop() !== 'csv') {
+const handleFileUpload = (src) => {
+  let filePath = src
+  if (filePath.split('.').pop() === 'zip') {
+    const zip = new AdmZip(src)
+    const zipEntiries = zip.getEntries()
+    filePath = tempDirectory + uuid.v4()
+    zip.extractEntryTo('pvu_sub_capacity.csv', filePath, true)
+    filePath += '/pvu_sub_capacity.csv'
+  } else if (filePath.split('.').pop() !== 'csv') {
     return
   }
   document.getElementById('upload').style.display = 'none'
   document.getElementById('visualization').style.display = 'flex'
-  visualization.loadFromCsv(path).then(() => {
+  visualization.loadFromCsv(filePath).then(() => {
     hydrateSearchResults(searchProducts(visualization.nodes))
   })
 }
@@ -22,7 +32,7 @@ const fileUpload = new FileUpload(
   document.getElementById('upload_container'),
   handleFileUpload
 )
-document.getElementById('file').addEventListener('input', (evt) => {
+document.getElementById('file').addEventListener('click', (evt) => {
   evt.preventDefault()
   handleFileUpload(ipcRenderer.sendSync('open-file'))
 })
