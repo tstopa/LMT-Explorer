@@ -1,199 +1,47 @@
-/**
- * This file will automatically be loaded by webpack and run in the "renderer" context.
- * To learn more about the differences between the "main" and the "renderer" context in
- * Electron, visit:
- *
- * https://electronjs.org/docs/tutorial/application-architecture#main-and-renderer-processes
- */
-
-import { resolve } from 'path'
-import { easingFunctions } from 'vis-util'
 import './index.css'
-const { ipcRenderer } = require('electron')
-const { Network } = require('vis-network/peer/esm/vis-network')
-const { DataSet } = require('vis-data/peer/esm/vis-data')
-const fs = require('fs')
-const readline = require('readline')
-const csv = require('csv-parser')
+const { Visualization } = require('./visualization')
 
 const container = document.getElementById('mynetwork')
-
-const nodes = new DataSet([])
-const edges = new DataSet([])
-
-const data = {
-  nodes: nodes,
-  edges: edges,
-}
-
-const options = {
-  height: '100%',
-  width: '100%',
-  nodes: {
-    shape: 'dot',
-    font: {
-      color: 'black',
-    },
-  },
-  edges: {
-    smooth: false,
-    arrows: {
-      to: {
-        enabled: false,
-        type: 'arrow',
-      },
-    },
-    chosen: true,
-    color: {
-      color: '#bbbbbb',
-      highlight: '#0000FF',
-      inherit: 'from',
-      opacity: 0.5,
-    },
-  },
-  physics: {
-    enabled: false,
-  },
-
-  layout: {
-    improvedLayout: true,
-    hierarchical: {
-      direction: 'UD',
-      nodeSpacing: 350,
-      sortMethod: 'directed',
-    },
-  },
-}
-
-const network = new Network(container, data, options)
-
-network.on('click', function (properties) {
-  const ids = properties.nodes
-  if (ids.length === 1) {
-    const clickedNode = nodes.get(ids[0])
-    console.log('clicked:', clickedNode)
-  }
-})
-
-function loadFile(event) {
-  return new Promise((resolve) => {
-    console.time('loading')
-    fs.createReadStream('test/data.csv')
-      .pipe(csv())
-      .on('data', (row) => {
-        buildTree(row)
-      })
-      .on('end', () => {
-        nodes.add(_nodes)
-        edges.add(_edges)
-        console.timeEnd('loading')
-        resolve()
-      })
-  })
-}
-const _edges = []
-const _nodes = []
-
-const buildTree = (row) => {
-  const NODE_TYPES = ['Server Name', 'Computer', 'Component', 'Product Name']
-  for (const nodeTypeID of NODE_TYPES.keys()) {
-    //top level nodes dont have parents
-    if (nodeTypeID === 0) {
-      const label = row[NODE_TYPES[nodeTypeID]]
-      if (_nodes.filter((element) => element.id === label).length === 0) {
-        _nodes.push({
-          id: label,
-          label: label,
-          group: nodeTypeID + 1,
-          level: nodeTypeID,
-        })
-      }
-    } else {
-      const parent = row[NODE_TYPES[nodeTypeID - 1]]
-      const label = row[NODE_TYPES[nodeTypeID]]
-      if (_nodes.filter((element) => element.id === label).length === 0) {
-        _nodes.push({
-          id: label,
-          label:
-            nodeTypeID === 3
-              ? label + ' (' + row['Metric Quantity'] + ' PVU)'
-              : label,
-          group: nodeTypeID + 1,
-          level: nodeTypeID,
-        })
-      }
-      if (
-        _edges.filter(
-          (element) => element.from === parent && element.to == label
-        ).length === 0
-      ) {
-        _edges.push({
-          from: parent,
-          to: label,
-        })
-      }
-    }
-  }
-}
-
-loadFile().then(() => {
-  for (const nodeId of nodes
-    .getIds()
-    .filter((id) => nodes.get(id).group === 4)) {
-    const p = document.createElement('p')
-    p.innerText = nodeId
-    p.addEventListener('click', (evt) => {
-      network.selectNodes([evt.target.innerText])
-      network.focus(evt.target.innerText, {
-        scale: 1,
-        animation: {
-          duration: 1000,
-          easingFunctions: 'easeInOutQuad',
-        },
-      })
-    })
-    searchResults.appendChild(p)
-  }
-})
-
-function debounce(func, timeout = 500) {
-  let timer
-  return (...args) => {
-    clearTimeout(timer)
-    timer = setTimeout(() => {
-      func.apply(this, args)
-    }, timeout)
-  }
-}
-
 const searchbar = document.getElementById('search')
 const searchResults = document.getElementById('search_result')
-searchbar.addEventListener(
-  'input',
-  debounce((evt) => {
-    const query = evt.target.value
-    const results = nodes.getIds().filter((element) => {
-      return (
-        element.toLowerCase().includes(query.toLowerCase()) &&
-        nodes.get(element).group === 4
-      )
-    })
-
-    searchResults.innerHTML = ''
-    for (const result of results) {
-      const p = document.createElement('p')
-      p.innerText = result
-      p.addEventListener('click', (evt) => {
-        network.selectNodes([evt.target.innerText])
-        network.focus(evt.target.innerText, {
-          scale: 1,
-          animation: {
-            duration: 1000,
-            easingFunctions: 'easeInOutQuad',
-          },
-        })
-      })
-      searchResults.appendChild(p)
-    }
+//create visualization instance
+const visualization = new Visualization(container)
+//load data from csv
+visualization.loadFromCsv('test/__data.csv').then(() => {
+  hydrateSearchResults(searchProducts(visualization.nodes))
+})
+const searchProducts = (nodes, query) => {
+  if (query) {
+    return nodes.filter(
+      (element) =>
+        element.group === 'product' &&
+        element.label.toLowerCase().includes(query.toLowerCase())
+    )
+  }
+  return nodes.filter((element) => element.group === 'product')
+}
+const hydrateSearchResults = (nodes) => {
+  searchResults.innerHTML = ''
+  for (const node of nodes) {
+    const p = document.createElement('p')
+    p.innerText = node.id
+    p.dataset.id = node.id
+    p.addEventListener('click', onResultClick)
+    searchResults.appendChild(p)
+  }
+}
+//focus on the selected product
+const onResultClick = (evt) => {
+  visualization.network.selectNodes([evt.target.dataset.id])
+  visualization.network.focus(evt.target.dataset.id, {
+    scale: 1,
+    animation: {
+      duration: 1000,
+      easingFunctions: 'easeInOutQuad',
+    },
   })
-)
+}
+//handle searchbox input
+searchbar.addEventListener('input', (evt) => {
+  hydrateSearchResults(searchProducts(visualization.nodes, evt.target.value))
+})
