@@ -175,7 +175,7 @@ searchbar.addEventListener(
     const results = nodes.getIds().filter((element) => {
       return (
         element.toLowerCase().includes(query.toLowerCase()) &&
-        nodes.get(element).group === 3
+        nodes.get(element).group === 4
       )
     })
 
