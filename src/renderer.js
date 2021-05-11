@@ -34,7 +34,11 @@ const fileUpload = new FileUpload(
 )
 document.getElementById('file').addEventListener('click', (evt) => {
   evt.preventDefault()
-  handleFileUpload(ipcRenderer.sendSync('open-file'))
+  ipcRenderer.sendSync('open-file-request')
+})
+ipcRenderer.on('open-file-request-response', (event, arg) => {
+  console.log(arg)
+  handleFileUpload(arg)
 })
 
 //create visualization instance
