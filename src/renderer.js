@@ -1,20 +1,19 @@
 import './index.css'
 const { Visualization } = require('./visualization')
 const { FileUpload } = require('./fileUpload')
-const container = document.getElementById('mynetwork')
-const searchbar = document.getElementById('search')
-const searchResults = document.getElementById('search_result')
 const { ipcRenderer } = require('electron')
 const AdmZip = require('adm-zip')
 const uuid = require('uuid')
 const tempDirectory = require('temp-dir')
+const container = document.getElementById('mynetwork')
+const searchbar = document.getElementById('search')
+const searchResults = document.getElementById('search_result')
 
 const handleFileUpload = (src) => {
   let filePath = src
   if (filePath.split('.').pop() === 'zip') {
     try {
       const zip = new AdmZip(src)
-      const zipEntiries = zip.getEntries()
       filePath = tempDirectory + uuid.v4()
       zip.extractEntryTo('pvu_sub_capacity.csv', filePath, true)
       filePath += '/pvu_sub_capacity.csv'
@@ -54,7 +53,6 @@ document.getElementById('file').addEventListener('click', (evt) => {
   ipcRenderer.send('open-file-request')
 })
 ipcRenderer.on('open-file-request-response', (event, arg) => {
-  console.log(arg)
   handleFileUpload(arg)
 })
 
