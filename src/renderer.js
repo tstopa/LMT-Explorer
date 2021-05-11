@@ -12,19 +12,36 @@ const tempDirectory = require('temp-dir')
 const handleFileUpload = (src) => {
   let filePath = src
   if (filePath.split('.').pop() === 'zip') {
-    const zip = new AdmZip(src)
-    const zipEntiries = zip.getEntries()
-    filePath = tempDirectory + uuid.v4()
-    zip.extractEntryTo('pvu_sub_capacity.csv', filePath, true)
-    filePath += '/pvu_sub_capacity.csv'
+    try {
+      const zip = new AdmZip(src)
+      const zipEntiries = zip.getEntries()
+      filePath = tempDirectory + uuid.v4()
+      zip.extractEntryTo('pvu_sub_capacity.csv', filePath, true)
+      filePath += '/pvu_sub_capacity.csv'
+    } catch (exception) {
+      ipcRenderer.send(
+        'show-error',
+        'It looks like the selected archive does not contain the appropriate files or there is not enough disk space on this computer to unpack it'
+      )
+      return
+    }
   } else if (filePath.split('.').pop() !== 'csv') {
+    ipcRenderer.send('show-error', 'Selected file is not supported')
     return
   }
   document.getElementById('upload').style.display = 'none'
   document.getElementById('visualization').style.display = 'flex'
-  visualization.loadFromCsv(filePath).then(() => {
-    hydrateSearchResults(searchProducts(visualization.nodes))
-  })
+  visualization
+    .loadFromCsv(filePath)
+    .then(() => {
+      hydrateSearchResults(searchProducts(visualization.nodes))
+    })
+    .catch((error) => {
+      ipcRenderer.send('show-error', 'The snapshot file is corrupted')
+      document.getElementById('upload').style.display = 'flex'
+      document.getElementById('visualization').style.display = 'none'
+      return
+    })
 }
 
 //create file upload instance
@@ -34,7 +51,7 @@ const fileUpload = new FileUpload(
 )
 document.getElementById('file').addEventListener('click', (evt) => {
   evt.preventDefault()
-  ipcRenderer.sendSync('open-file-request')
+  ipcRenderer.send('open-file-request')
 })
 ipcRenderer.on('open-file-request-response', (event, arg) => {
   console.log(arg)

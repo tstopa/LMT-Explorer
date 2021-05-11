@@ -70,7 +70,7 @@ class Visualization {
    * @returns Promise that resolves with the networks nodes
    */
   loadFromCsv(file) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       this.nodes = []
       this.edges = []
       this.networkData.nodes.clear()
@@ -82,6 +82,9 @@ class Visualization {
           this.addRow(row)
         })
         .on('end', () => {
+          if (this.nodes.length === 0) {
+            reject('the file does not contain the required headers')
+          }
           this.build()
           resolve(this.nodes)
         })

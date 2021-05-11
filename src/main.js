@@ -5,10 +5,10 @@ if (require('electron-squirrel-startup')) {
   // eslint-disable-line global-require
   app.quit()
 }
-
+let mainWindow = null
 const createWindow = () => {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     webPreferences: {
@@ -42,9 +42,7 @@ const createWindow = () => {
                 }
               })
               // should always handle the error yourself, later Electron release might crash if you don't
-              .catch(function (err) {
-                console.error(err)
-              })
+              .catch(function (err) {})
           },
         },
         {
@@ -60,7 +58,7 @@ const createWindow = () => {
   // and load the index.html of the app.
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY)
   // Open the DevTools.
-  mainWindow.webContents.openDevTools()
+  // mainWindow.webContents.openDevTools()
 }
 
 // This method will be called when Electron has finished
@@ -76,21 +74,35 @@ app.on('window-all-closed', () => {
     app.quit()
   }
 })
+const showError = (error) => {
+  dialog.showMessageBox(null, {
+    type: 'error',
+    buttons: ['ok'],
+    defaultId: 2,
+    title: 'Error',
+    message: 'error occured ',
+    detail: error,
+  })
+}
+ipcMain.on('show-error', (event, args) => {
+  showError(args)
+})
 ipcMain.on('open-file-request', (evnt, args) => {
   dialog
     .showOpenDialog({
       properties: ['openFile'],
     })
-    .then(function (fileObj) {
+    .then((fileObj) => {
       // the fileObj has two props
       if (!fileObj.canceled) {
-        evnt.reply('open-file-request-response', fileObj.filePaths[0])
+        mainWindow.webContents.send(
+          'open-file-request-response',
+          fileObj.filePaths[0]
+        )
       }
     })
     // should always handle the error yourself, later Electron release might crash if you don't
-    .catch(function (err) {
-      console.error(err)
-    })
+    .catch(function (err) {})
 })
 app.on('activate', () => {
   // On OS X it's common to re-create a window in the app when the
