@@ -56,7 +56,7 @@ class Product {
   constructor(row) {
     this.id = row['Product Name']
     this.label =
-      row['Product Name'] + '\n <b>(' + row['Metric Quantity'] + ' PVU)</b>'
+      row['Product Name'] + '\n <b>' + row['Metric Quantity'] + ' PVU</b>'
     this.group = 'product'
     this.level = 3
     this.pvu = row['Metric Quantity']

@@ -131,8 +131,49 @@ body {
   width: 100%;
   height: 100%;
 }
-.container {
+
+#upload {
+  background-color: #f3f3f3;
+  width: 100vw;
+  height: 100vh;
   display: flex;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+  justify-content: center;
+}
+#upload .box {
+  background-color: #c7d8ec;
+  width: 90%;
+  height: 90%;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+  justify-content: center;
+  border: 3px dashed #778391;
+  transition-duration: 500ms;
+}
+#upload .box.draged {
+  background-color: #aacaee;
+}
+.box__file {
+  display: none;
+}
+.box strong {
+  font-weight: bold;
+}
+.box label {
+  font-size: 2rem;
+  user-select: none;
+}
+.box label:hover {
+  cursor: pointer;
+}
+
+#visualization {
+  display: none;
+  /* display: flex; */
   width: 100vw;
   height: 100vh;
   flex-direction: row;

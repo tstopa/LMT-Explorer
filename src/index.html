@@ -8,7 +8,15 @@
 </head>
 
 <body>
-  <div class="container">
+  <div id="upload">
+    <form class="box" id="upload_container" method="post" action="" enctype="multipart/form-data">
+      <div class="box__input">
+        <label id="file" for="file"><strong>Choose</strong> a ILMT snapshot file (zip package) or <strong>drag it
+            here.</strong></label>
+      </div>
+    </form>
+  </div>
+  <div id="visualization">
     <div id="mynetwork"></div>
     <div class="details">
       <input id="search" type="text">

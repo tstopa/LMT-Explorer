@@ -1,15 +1,64 @@
 import './index.css'
 const { Visualization } = require('./visualization')
-
+const { FileUpload } = require('./fileUpload')
+const { ipcRenderer } = require('electron')
+const AdmZip = require('adm-zip')
+const uuid = require('uuid')
+const tempDirectory = require('temp-dir')
 const container = document.getElementById('mynetwork')
 const searchbar = document.getElementById('search')
 const searchResults = document.getElementById('search_result')
+
+const handleFileUpload = (src) => {
+  let filePath = src
+  if (filePath.split('.').pop() === 'zip') {
+    try {
+      const zip = new AdmZip(src)
+      filePath = tempDirectory + uuid.v4()
+      zip.extractEntryTo('pvu_sub_capacity.csv', filePath, true)
+      filePath += '/pvu_sub_capacity.csv'
+    } catch (exception) {
+      ipcRenderer.send(
+        'show-error',
+        'It looks like the selected archive does not contain the appropriate files or there is not enough disk space on this computer to unpack it'
+      )
+      return
+    }
+  } else if (filePath.split('.').pop() !== 'csv') {
+    ipcRenderer.send('show-error', 'Selected file is not supported')
+    return
+  }
+  document.getElementById('upload').style.display = 'none'
+  document.getElementById('visualization').style.display = 'flex'
+  visualization
+    .loadFromCsv(filePath)
+    .then(() => {
+      hydrateSearchResults(searchProducts(visualization.nodes))
+    })
+    .catch((error) => {
+      ipcRenderer.send('show-error', 'The snapshot file is corrupted')
+      document.getElementById('upload').style.display = 'flex'
+      document.getElementById('visualization').style.display = 'none'
+      return
+    })
+}
+
+//create file upload instance
+const fileUpload = new FileUpload(
+  document.getElementById('upload_container'),
+  handleFileUpload
+)
+document.getElementById('file').addEventListener('click', (evt) => {
+  evt.preventDefault()
+  ipcRenderer.send('open-file-request')
+})
+ipcRenderer.on('open-file-request-response', (event, arg) => {
+  handleFileUpload(arg)
+})
+
 //create visualization instance
 const visualization = new Visualization(container)
-//load data from csv
-visualization.loadFromCsv('test/__data.csv').then(() => {
-  hydrateSearchResults(searchProducts(visualization.nodes))
-})
+
 const searchProducts = (nodes, query) => {
   if (query) {
     return nodes.filter(
