@@ -92,5 +92,25 @@ const onResultClick = (evt) => {
 }
 //handle searchbox input
 searchbar.addEventListener('input', (evt) => {
-  hydrateSearchResults(searchProducts(visualization.nodes, evt.target.value))
+  hydrateSearchResults(
+    searchProducts(
+      visualization.networkData.nodes.map((e) => e),
+      evt.target.value
+    )
+  )
+})
+document
+  .getElementById('visualization')
+  .addEventListener('contextmenu', (evt) => {
+    ipcRenderer.send('pop-visualization-ctx-menu')
+  })
+ipcRenderer.on('show-selected-products', (evt, args) => {
+  visualization.showSelectedNodesContextGraph().then((result) => {
+    hydrateSearchResults(searchProducts(result))
+  })
+})
+ipcRenderer.on('show-all-products', (evt, args) => {
+  visualization.showAllNodes().then((result) => {
+    hydrateSearchResults(searchProducts(result))
+  })
 })

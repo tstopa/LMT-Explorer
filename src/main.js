@@ -1,4 +1,11 @@
-const { app, BrowserWindow, dialog, ipcMain, Menu } = require('electron')
+const {
+  app,
+  BrowserWindow,
+  dialog,
+  ipcMain,
+  Menu,
+  MenuItem,
+} = require('electron')
 const path = require('path')
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -6,6 +13,7 @@ if (require('electron-squirrel-startup')) {
   app.quit()
 }
 let mainWindow = null
+
 const createWindow = () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -69,6 +77,25 @@ app.on('ready', createWindow)
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
+
+const visualizationCtxMenu = new Menu()
+visualizationCtxMenu.append(
+  new MenuItem({
+    label: 'show selected products context',
+    click: () => mainWindow.webContents.send('show-selected-products'),
+  })
+)
+visualizationCtxMenu.append(
+  new MenuItem({
+    label: 'show all products context',
+    click: () => mainWindow.webContents.send('show-all-products'),
+  })
+)
+
+ipcMain.on('pop-visualization-ctx-menu', (evnt, args) => {
+  visualizationCtxMenu.popup()
+})
+
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()

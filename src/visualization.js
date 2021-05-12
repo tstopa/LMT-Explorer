@@ -186,10 +186,11 @@ class Visualization {
     return new Promise((resolve) => {
       const selectedNodes = this.network.getSelectedNodes()
       const parentNodes = this.getNodesContextGraph(selectedNodes)
-      this.networkData.nodes.clear()
-      this.networkData.nodes.add(
-        this.nodes.filter((elm) => parentNodes.includes(elm.id))
+      const renderedNodes = this.nodes.filter((elm) =>
+        parentNodes.includes(elm.id)
       )
+      this.networkData.nodes.clear()
+      this.networkData.nodes.add(renderedNodes)
       this.network.focus(selectedNodes[0], {
         scale: 0.5,
         animation: {
@@ -197,7 +198,7 @@ class Visualization {
           easingFunctions: 'easeInOutQuad',
         },
       })
-      resolve()
+      resolve(renderedNodes)
     })
   }
 
@@ -205,7 +206,7 @@ class Visualization {
     return new Promise((resolve) => {
       this.networkData.nodes.clear()
       this.networkData.nodes.add(this.nodes)
-      resolve()
+      resolve(this.nodes)
     })
   }
 }
