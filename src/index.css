@@ -157,6 +157,16 @@ body {
 #upload .box.draged {
   background-color: #aacaee;
 }
+.details label {
+  width: 90%;
+  margin-top: 1rem;
+  display: block;
+  text-align: left;
+  margin-left: auto;
+  margin-right: auto;
+  font-weight: bold;
+  text-transform: uppercase;
+}
 .box__file {
   display: none;
 }
@@ -205,7 +215,7 @@ body {
   text-align: left;
   margin-left: auto;
   margin-right: auto;
-  height: 30vh;
+  height: 80vh;
   width: 90%;
   overflow-y: scroll;
   overflow-x: hidden;
