@@ -48,7 +48,7 @@ class Visualization {
       physics: {
         enabled: false,
       },
-
+      interaction: { multiselect: true },
       layout: {
         improvedLayout: true,
         hierarchical: {
@@ -161,6 +161,52 @@ class Visualization {
   build() {
     this.networkData.nodes.add(this.nodes)
     this.networkData.edges.add(this.edges)
+  }
+
+  getNodesContextGraph(selectedNodes) {
+    const contextGraph = selectedNodes
+    const getParentNode = (nodes) => {
+      const parents = []
+      for (let i = 0; i < nodes.length; i++) {
+        parents.push(
+          ...this.edges
+            .filter((element) => element.to === nodes[i])
+            .map((element) => element.from)
+        )
+      }
+      contextGraph.push(...parents)
+
+      return parents.length === 0 ? [] : getParentNode(parents)
+    }
+    getParentNode(selectedNodes)
+    return [...new Set(contextGraph)]
+  }
+
+  showSelectedNodesContextGraph() {
+    return new Promise((resolve) => {
+      const selectedNodes = this.network.getSelectedNodes()
+      const parentNodes = this.getNodesContextGraph(selectedNodes)
+      this.networkData.nodes.clear()
+      this.networkData.nodes.add(
+        this.nodes.filter((elm) => parentNodes.includes(elm.id))
+      )
+      this.network.focus(selectedNodes[0], {
+        scale: 0.5,
+        animation: {
+          duration: 1000,
+          easingFunctions: 'easeInOutQuad',
+        },
+      })
+      resolve()
+    })
+  }
+
+  showAllNodes() {
+    return new Promise((resolve) => {
+      this.networkData.nodes.clear()
+      this.networkData.nodes.add(this.nodes)
+      resolve()
+    })
   }
 }
 
