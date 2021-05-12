@@ -82,7 +82,7 @@ class Visualization {
           this.addRow(row)
         })
         .on('end', () => {
-          if (this.nodes.length === 0) {
+          if (this.nodes.length < 3) {
             reject('the file does not contain the required headers')
           }
           this.build()
