@@ -1,8 +1,8 @@
 {
-  "name": "ilmt-report-visualization",
-  "productName": "ilmt-report-visualization",
+  "name": "lmt-explorer",
+  "productName": "LMT Explorer",
   "version": "1.0.0",
-  "description": "ILMT Report Visualization",
+  "description": "ILMT Audit Snapshot Explorer ",
   "main": ".webpack/main",
   "scripts": {
     "start": "electron-forge start",
