@@ -12,10 +12,11 @@ class Visualization {
    * @param {Element} networkContainer
    * @param {Object} option visjs network options @see https://visjs.github.io/vis-network/docs/network/
    */
-  constructor(networkContainer, option) {
+  constructor(networkContainer, option, onNodeSelected) {
     this.networkContainer = networkContainer
     this.nodes = []
     this.edges = []
+    this.onNodeSelectionUpdate = onNodeSelected
     this.networkData = {
       nodes: new DataSet([]),
       edges: new DataSet([]),
@@ -63,6 +64,8 @@ class Visualization {
       ...this.networkOptions,
       ...option,
     })
+    this.network.on('selectNode', this.onNodeSelectionUpdate)
+    this.network.on('deselectNode', this.onNodeSelectionUpdate)
   }
   /**
    * load visualization of given file
@@ -71,6 +74,7 @@ class Visualization {
    */
   loadFromCsv(file) {
     return new Promise((resolve, reject) => {
+      document.body.classList.add('waiting')
       this.nodes = []
       this.edges = []
       this.networkData.nodes.clear()
@@ -122,6 +126,7 @@ class Visualization {
             reject('the file does not contain the required headers')
           }
           this.build()
+          document.body.classList.remove('waiting')
           resolve(this.nodes)
         })
     })
@@ -219,6 +224,7 @@ class Visualization {
   }
 
   showSelectedNodesContextGraph() {
+    document.body.classList.add('waiting')
     return new Promise((resolve) => {
       const selectedNodes = this.network.getSelectedNodes()
       const parentNodes = this.getNodesContextGraph(selectedNodes)
@@ -234,14 +240,17 @@ class Visualization {
           easingFunctions: 'easeInOutQuad',
         },
       })
+      document.body.classList.remove('waiting')
       resolve(renderedNodes)
     })
   }
 
   showAllNodes() {
+    document.body.classList.add('waiting')
     return new Promise((resolve) => {
       this.networkData.nodes.clear()
       this.networkData.nodes.add(this.nodes)
+      document.body.classList.remove('waiting')
       resolve(this.nodes)
     })
   }

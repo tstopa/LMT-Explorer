@@ -57,7 +57,17 @@ ipcRenderer.on('open-file-request-response', (event, arg) => {
 })
 
 //create visualization instance
-const visualization = new Visualization(container)
+const onNodeSelectionUpdate = () => {
+  const selectedNodes = visualization.network.getSelectedNodes()
+  for (const element of searchResults.childNodes) {
+    if (selectedNodes.includes(element.dataset.id)) {
+      element.classList.add('selected')
+    } else {
+      element.classList.remove('selected')
+    }
+  }
+}
+const visualization = new Visualization(container, {}, onNodeSelectionUpdate)
 
 const searchProducts = (nodes, query) => {
   if (query) {
@@ -78,10 +88,27 @@ const hydrateSearchResults = (nodes) => {
     p.addEventListener('click', onResultClick)
     searchResults.appendChild(p)
   }
+  onNodeSelectionUpdate()
 }
 //focus on the selected product
 const onResultClick = (evt) => {
-  visualization.network.selectNodes([evt.target.dataset.id])
+  if (window.event.ctrlKey) {
+    if (evt.target.classList.contains('selected')) {
+      visualization.network.selectNodes(
+        visualization.network
+          .getSelectedNodes()
+          .filter((elm) => elm !== evt.target.dataset.id)
+      )
+    } else {
+      visualization.network.selectNodes([
+        ...visualization.network.getSelectedNodes(),
+        evt.target.dataset.id,
+      ])
+    }
+  } else {
+    visualization.network.selectNodes([evt.target.dataset.id])
+  }
+  onNodeSelectionUpdate()
   visualization.network.focus(evt.target.dataset.id, {
     scale: 1,
     animation: {
