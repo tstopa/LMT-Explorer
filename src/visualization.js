@@ -77,7 +77,43 @@ class Visualization {
       this.networkData.edges.clear()
 
       fs.createReadStream(file)
-        .pipe(csv())
+        .pipe(
+          csv({
+            skipLines: 1,
+            headers: [
+              'Row No.',
+              'Publisher',
+              'Imported Part Numbers',
+              'Product Name',
+              'FlexPoint or Cloud Pak Bundle',
+              'Metric Quantity',
+              'Metric Peak Value Time',
+              'Recalculation Needed',
+              'Server Name',
+              'Processor',
+              'Processor Brand String',
+              'PVU Per Core',
+              'Changed PVU Per Core',
+              'Physical Server CPU Core Subcapacity Limit',
+              'Physical Server CPU Core Subcapacity',
+              'Physical Server PVU Subcapacity Limit',
+              'Physical Server PVU Subcapacity',
+              'Comment',
+              'Partition Cores',
+              'Virtualization Layer ID',
+              'Computer',
+              'Computer Deleted',
+              'OS',
+              'IP Address',
+              'Product Release',
+              'Component',
+              'Path',
+              'Unconfirmed Product Instance',
+              'Computer Last Seen',
+              'Exclusion Comment',
+            ],
+          })
+        )
         .on('data', (row) => {
           this.addRow(row)
         })

@@ -23,6 +23,7 @@ const createWindow = () => {
       nodeIntegration: true,
       contextIsolation: false,
     },
+    icon: path.join(__dirname, '/../../icons/png/64x64.png'),
   })
 
   // setting up the menu with just two items
