@@ -1,47 +1,30 @@
-# ILMT Report Visualization
+# LMT Explorer
 
-ILMT report visualization is an ILMT snapshot visualization tool.
+This tool is used to visualize and make simpler reading ILMT audit snapshot based on PVU sub-capacity metric.
 
 ## Installation
 
-Use the package manager [npm](https://pip.pypa.io/en/stable/) or [yarn](https://pip.pypa.io/en/stable/) to install ILMT Report Visualization.
+1. Go to the releases site by clicking it on the right panel or adding '/releases' to the web address.
+2. Download the installer here.
+3. Run the installer and thats all.
 
-```bash
-npm install
-```
+## User's guide
 
-or
+1. When you open the program, you see a window, where you drop the ILMT snapshot (zipped).
+2. Wait until the program opens and presents a diagram (this may take a while).
+3. On the main panel, you see visual presentation of provided audit snapshot, where:
 
-```bash
-yarn
-```
+-   Blue circles are physical servers
+-   Yellow are virtual machines
+-   Red are components
+-   Green are products
 
-## Run
+4. You can pick every color circle, by clicking it and move it right and left, for easier analysis.
+5. By clicking on circle all its connections will be highlighted.
+6. On the right panel, you can search for products. After choosing one, the view will zoom on it.
 
-Use the package manager [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/) to run the development version of ILMT Report Visualization.
+## In current version LMT Explorer works only with sub-capactiy metric!
 
-```bash
-yarn start
-```
+## Information for developers
 
-or
-
-```bash
-npm start
-```
-
-## Build
-
-Use the package manager [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/) to build ILMT Report Visualization.
-The installer will be built into `out/make/squirrel.windows/x64/ilmt-report-visualization-1.0.0 Setup.exe`
-and portable version will be placed into `out/ilmt-report-visualization-win32-x64/ilmt-report-visualization.exe`.
-
-```bash
-yarn make
-```
-
-or
-
-```bash
-npm run make
-```
+[developer's guide](./DEVELOPER.md)
