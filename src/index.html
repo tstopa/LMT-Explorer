@@ -3,12 +3,27 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>ILMT Report Visualization</title>
+  <title>LMT Explorer</title>
 
 </head>
 
 <body>
-  <div id="mynetwork"></div>
+  <div id="upload">
+    <form class="box" id="upload_container" method="post" action="" enctype="multipart/form-data">
+      <div class="box__input">
+        <label id="file" for="file"><strong>Choose</strong> an ILMT audit snapshot file (zip package) or <strong>drag it
+            here.</strong></label>
+      </div>
+    </form>
+  </div>
+  <div id="visualization">
+    <div id="mynetwork"></div>
+    <div class="details">
+      <input id="search" placeholder="search for product" type="text"><br>
+      <label for="search">software products</label>
+      <div id="search_result"></div>
+    </div>
+  </div>
   </script>
 </body>
 

@@ -1,126 +1,96 @@
-/**
- * This file will automatically be loaded by webpack and run in the "renderer" context.
- * To learn more about the differences between the "main" and the "renderer" context in
- * Electron, visit:
- *
- * https://electronjs.org/docs/tutorial/application-architecture#main-and-renderer-processes
- */
-
 import './index.css'
-const { Network } = require('vis-network/peer/esm/vis-network')
-const { DataSet } = require('vis-data/peer/esm/vis-data')
-
-const nodes = new DataSet([
-  {
-    id: 1,
-    label: 'IBM',
-    group: 'root',
-  },
-  {
-    id: 2,
-    label: 'IBM(R) SoftLayer One core All Existing',
-    group: 'node',
-  },
-  {
-    id: 12,
-    label: 'IBM(R) SoftLayer One core All Existing',
-    group: 'node',
-  },
-  {
-    id: 3,
-    label: 'IBM SoftLayer 6e17f5dc-e8a5-4d90-722f-8d246392',
-    group: 'partition',
-  },
-  {
-    id: 13,
-    label: 'IBM SoftLayer 6e17f5dc-e8a5-4d90-723f-8d246392',
-    group: 'partition',
-  },
-  {
-    id: 4,
-    label: 'IBM SoftLayer 6e17f5dc-e8a5-4d90-722f-8d246392',
-    group: 'partition',
-  },
-  {
-    id: 5,
-    label: 'IBM db2',
-    group: 'software_component',
-  },
-  {
-    id: 15,
-    label: 'IBM db2',
-    group: 'software_component',
-  },
-  {
-    id: 6,
-    label: 'IBM DB2 Advanced Enterprise Server Edition Pro',
-    group: 'software_component',
-  },
-  {
-    id: 7,
-    label: 'IBM DB2 Content Manager',
-    group: 'software_product',
-  },
-  {
-    id: 8,
-    label: 'IBM DB2 Content Creator',
-    group: 'software_product',
-  },
-  {
-    id: 18,
-    label: 'IBM DB2 Content Creator',
-    group: 'software_product',
-  },
-])
-const edges = new DataSet([
-  { from: 1, to: 2 },
-  { from: 2, to: 3 },
-  { from: 2, to: 4 },
-  { from: 4, to: 6 },
-  { from: 6, to: 7 },
-  { from: 6, to: 8 },
-  { from: 3, to: 5 },
-  { from: 5, to: 7 },
-  { from: 5, to: 8 },
-  { from: 1, to: 12 },
-  { from: 12, to: 13 },
-  { from: 13, to: 15 },
-  { from: 15, to: 8 },
-  { from: 15, to: 18 },
-])
+const { Visualization } = require('./visualization')
+const { FileUpload } = require('./fileUpload')
+const { ipcRenderer } = require('electron')
+const AdmZip = require('adm-zip')
+const uuid = require('uuid')
+const tempDirectory = require('temp-dir')
 const container = document.getElementById('mynetwork')
-const data = {
-  nodes: nodes,
-  edges: edges,
+const searchbar = document.getElementById('search')
+const searchResults = document.getElementById('search_result')
+
+const handleFileUpload = (src) => {
+  let filePath = src
+  if (filePath.split('.').pop() === 'zip') {
+    try {
+      const zip = new AdmZip(src)
+      filePath = tempDirectory + uuid.v4()
+      zip.extractEntryTo('pvu_sub_capacity.csv', filePath, true)
+      filePath += '/pvu_sub_capacity.csv'
+    } catch (exception) {
+      ipcRenderer.send(
+        'show-error',
+        'It looks like the selected archive does not contain the appropriate files or there is not enough disk space on this computer to unpack it'
+      )
+      return
+    }
+  } else if (filePath.split('.').pop() !== 'csv') {
+    ipcRenderer.send('show-error', 'Selected file is not supported')
+    return
+  }
+  document.getElementById('upload').style.display = 'none'
+  document.getElementById('visualization').style.display = 'flex'
+  visualization
+    .loadFromCsv(filePath)
+    .then(() => {
+      hydrateSearchResults(searchProducts(visualization.nodes))
+    })
+    .catch((error) => {
+      ipcRenderer.send('show-error', 'The snapshot file is corrupted')
+      document.getElementById('upload').style.display = 'flex'
+      document.getElementById('visualization').style.display = 'none'
+      return
+    })
 }
-const options = {
-  height: '100%',
-  width: '100%',
-  nodes: {
-    shape: 'dot',
-    font: {
-      color: 'black',
-    },
-  },
-  edges: {
-    smooth: false,
-    arrows: {
-      to: {
-        enabled: true,
-        type: 'arrow',
-      },
-    },
-  },
-  physics: {
-    enabled: false,
-  },
-  layout: {
-    improvedLayout: true,
-    hierarchical: {
-      direction: 'UD',
-      nodeSpacing: 500,
-      sortMethod: 'directed', //hubsize, directed.
-    },
-  },
+
+//create file upload instance
+const fileUpload = new FileUpload(
+  document.getElementById('upload_container'),
+  handleFileUpload
+)
+document.getElementById('file').addEventListener('click', (evt) => {
+  evt.preventDefault()
+  ipcRenderer.send('open-file-request')
+})
+ipcRenderer.on('open-file-request-response', (event, arg) => {
+  handleFileUpload(arg)
+})
+
+//create visualization instance
+const visualization = new Visualization(container)
+
+const searchProducts = (nodes, query) => {
+  if (query) {
+    return nodes.filter(
+      (element) =>
+        element.group === 'product' &&
+        element.label.toLowerCase().includes(query.toLowerCase())
+    )
+  }
+  return nodes.filter((element) => element.group === 'product')
 }
-const network = new Network(container, data, options)
+const hydrateSearchResults = (nodes) => {
+  searchResults.innerHTML = ''
+  for (const node of nodes) {
+    const p = document.createElement('p')
+    p.innerText = node.id
+    p.dataset.id = node.id
+    p.addEventListener('click', onResultClick)
+    searchResults.appendChild(p)
+  }
+}
+//focus on the selected product
+const onResultClick = (evt) => {
+  visualization.network.selectNodes([evt.target.dataset.id])
+  visualization.network.focus(evt.target.dataset.id, {
+    scale: 1,
+    animation: {
+      duration: 1000,
+      easingFunctions: 'easeInOutQuad',
+    },
+  })
+}
+//handle searchbox input
+searchbar.addEventListener('input', (evt) => {
+  hydrateSearchResults(searchProducts(visualization.nodes, evt.target.value))
+})
