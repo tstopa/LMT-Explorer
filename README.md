@@ -1,7 +1,9 @@
 # LMT Explorer
 
 This tool is used to visualize and make simpler reading ILMT audit snapshot based on PVU sub-capacity metric.
-
+ 
+ **Note:** LMT Explorer is provided as-is, without any warranty and without official support. This is community project and not official IBM tool
+ 
 ## Installation
 
 1. Go to the releases site by clicking it on the right panel or adding '/releases' to the web address.
