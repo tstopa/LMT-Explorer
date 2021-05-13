@@ -136,7 +136,20 @@ ipcRenderer.on('show-selected-products', (evt, args) => {
     hydrateSearchResults(searchProducts(result))
   })
 })
+
+document.getElementById('show-selected').addEventListener('click', () => {
+  visualization.showSelectedNodesContextGraph().then((result) => {
+    hydrateSearchResults(searchProducts(result))
+  })
+})
+
 ipcRenderer.on('show-all-products', (evt, args) => {
+  visualization.showAllNodes().then((result) => {
+    hydrateSearchResults(searchProducts(result))
+  })
+})
+
+document.getElementById('show-all').addEventListener('click', () => {
   visualization.showAllNodes().then((result) => {
     hydrateSearchResults(searchProducts(result))
   })

@@ -217,7 +217,7 @@ body.waiting * {
   text-align: left;
   margin-left: auto;
   margin-right: auto;
-  height: 70vh;
+  height: 68vh;
   width: 90%;
   overflow-y: scroll;
   overflow-x: hidden;
@@ -236,4 +236,28 @@ body.waiting * {
   background-color: #004faa !important;
   color: white;
   cursor: pointer;
+}
+.button-wrapper {
+  width: 90%;
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin-top: 1rem;
+}
+.button-wrapper button {
+  display: block;
+  width: 100%;
+  text-align: center;
+  background-color: white;
+  padding: 0.3rem;
+  border: 1px solid rgb(168, 168, 168);
+  margin: 0.1rem;
+  text-transform: capitalize;
+}
+.button-wrapper button:hover {
+  cursor: pointer;
+  background-color: rgb(250, 250, 250);
 }

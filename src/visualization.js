@@ -3,6 +3,7 @@ const { DataSet } = require('vis-data/peer/esm/vis-data')
 const { Server, Computer, Component, Product } = require('./nodes')
 const fs = require('fs')
 const csv = require('csv-parser')
+const { resolve } = require('path')
 /**
  * Graph visualization class
  */
@@ -225,6 +226,10 @@ class Visualization {
 
   showSelectedNodesContextGraph() {
     document.body.classList.add('waiting')
+    if (this.network.getSelectedNodes().length === 0) {
+      document.body.classList.remove('waiting')
+      return new Promise((resolve) => resolve(this.nodes))
+    }
     return new Promise((resolve) => {
       const selectedNodes = this.network.getSelectedNodes()
       const parentNodes = this.getNodesContextGraph(selectedNodes)
