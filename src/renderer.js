@@ -29,7 +29,7 @@ const handleFileUpload = (src) => {
     return
   }
   document.getElementById('upload').style.display = 'none'
-  document.getElementById('visualization').style.display = 'flex'
+  document.getElementById('main').style.display = 'flex'
   visualization
     .loadFromCsv(filePath)
     .then(() => {
@@ -38,7 +38,7 @@ const handleFileUpload = (src) => {
     .catch((error) => {
       ipcRenderer.send('show-error', 'The snapshot file is corrupted')
       document.getElementById('upload').style.display = 'flex'
-      document.getElementById('visualization').style.display = 'none'
+      document.getElementById('main').style.display = 'none'
       return
     })
 }
@@ -57,7 +57,17 @@ ipcRenderer.on('open-file-request-response', (event, arg) => {
 })
 
 //create visualization instance
-const visualization = new Visualization(container)
+const onNodeSelectionUpdate = () => {
+  const selectedNodes = visualization.network.getSelectedNodes()
+  for (const element of searchResults.childNodes) {
+    if (selectedNodes.includes(element.dataset.id)) {
+      element.classList.add('selected')
+    } else {
+      element.classList.remove('selected')
+    }
+  }
+}
+const visualization = new Visualization(container, {}, onNodeSelectionUpdate)
 
 const searchProducts = (nodes, query) => {
   if (query) {
@@ -78,10 +88,27 @@ const hydrateSearchResults = (nodes) => {
     p.addEventListener('click', onResultClick)
     searchResults.appendChild(p)
   }
+  onNodeSelectionUpdate()
 }
 //focus on the selected product
 const onResultClick = (evt) => {
-  visualization.network.selectNodes([evt.target.dataset.id])
+  if (window.event.ctrlKey) {
+    if (evt.target.classList.contains('selected')) {
+      visualization.network.selectNodes(
+        visualization.network
+          .getSelectedNodes()
+          .filter((elm) => elm !== evt.target.dataset.id)
+      )
+    } else {
+      visualization.network.selectNodes([
+        ...visualization.network.getSelectedNodes(),
+        evt.target.dataset.id,
+      ])
+    }
+  } else {
+    visualization.network.selectNodes([evt.target.dataset.id])
+  }
+  onNodeSelectionUpdate()
   visualization.network.focus(evt.target.dataset.id, {
     scale: 1,
     animation: {
@@ -92,5 +119,36 @@ const onResultClick = (evt) => {
 }
 //handle searchbox input
 searchbar.addEventListener('input', (evt) => {
-  hydrateSearchResults(searchProducts(visualization.nodes, evt.target.value))
+  hydrateSearchResults(
+    searchProducts(
+      visualization.networkData.nodes.map((e) => e),
+      evt.target.value
+    )
+  )
+})
+document.getElementById('main').addEventListener('contextmenu', (evt) => {
+  ipcRenderer.send('pop-visualization-ctx-menu')
+})
+ipcRenderer.on('show-selected-products', (evt, args) => {
+  visualization.showSelectedNodesContextGraph().then((result) => {
+    hydrateSearchResults(searchProducts(result))
+  })
+})
+
+document.getElementById('show-selected').addEventListener('click', () => {
+  visualization.showSelectedNodesContextGraph().then((result) => {
+    hydrateSearchResults(searchProducts(result))
+  })
+})
+
+ipcRenderer.on('show-all-products', (evt, args) => {
+  visualization.showAllNodes().then((result) => {
+    hydrateSearchResults(searchProducts(result))
+  })
+})
+
+document.getElementById('show-all').addEventListener('click', () => {
+  visualization.showAllNodes().then((result) => {
+    hydrateSearchResults(searchProducts(result))
+  })
 })

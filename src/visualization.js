@@ -3,6 +3,7 @@ const { DataSet } = require('vis-data/peer/esm/vis-data')
 const { Server, Computer, Component, Product } = require('./nodes')
 const fs = require('fs')
 const csv = require('csv-parser')
+const { resolve } = require('path')
 /**
  * Graph visualization class
  */
@@ -12,10 +13,11 @@ class Visualization {
    * @param {Element} networkContainer
    * @param {Object} option visjs network options @see https://visjs.github.io/vis-network/docs/network/
    */
-  constructor(networkContainer, option) {
+  constructor(networkContainer, option, onNodeSelected) {
     this.networkContainer = networkContainer
     this.nodes = []
     this.edges = []
+    this.onNodeSelectionUpdate = onNodeSelected
     this.networkData = {
       nodes: new DataSet([]),
       edges: new DataSet([]),
@@ -48,7 +50,7 @@ class Visualization {
       physics: {
         enabled: false,
       },
-
+      interaction: { multiselect: true },
       layout: {
         improvedLayout: true,
         hierarchical: {
@@ -63,6 +65,8 @@ class Visualization {
       ...this.networkOptions,
       ...option,
     })
+    this.network.on('selectNode', this.onNodeSelectionUpdate)
+    this.network.on('deselectNode', this.onNodeSelectionUpdate)
   }
   /**
    * load visualization of given file
@@ -71,6 +75,7 @@ class Visualization {
    */
   loadFromCsv(file) {
     return new Promise((resolve, reject) => {
+      document.body.classList.add('waiting')
       this.nodes = []
       this.edges = []
       this.networkData.nodes.clear()
@@ -122,6 +127,7 @@ class Visualization {
             reject('the file does not contain the required headers')
           }
           this.build()
+          document.body.classList.remove('waiting')
           resolve(this.nodes)
         })
     })
@@ -197,6 +203,70 @@ class Visualization {
   build() {
     this.networkData.nodes.add(this.nodes)
     this.networkData.edges.add(this.edges)
+  }
+  /**
+   * Get an array of nodes that are connected or interconnected to the nodes given as an argument
+   * @param {Array} selectedNodes
+   * @returns an array of nodes that are connected or interconnected to the nodes given as an argument
+   */
+  getNodesContextGraph(selectedNodes) {
+    const contextGraph = selectedNodes
+    const getParentNode = (nodes) => {
+      const parents = []
+      for (let i = 0; i < nodes.length; i++) {
+        parents.push(
+          ...this.edges
+            .filter((element) => element.to === nodes[i])
+            .map((element) => element.from)
+        )
+      }
+      contextGraph.push(...parents)
+
+      return parents.length === 0 ? [] : getParentNode(parents)
+    }
+    getParentNode(selectedNodes)
+    return [...new Set(contextGraph)]
+  }
+  /**
+   *  Show selected nodes context graph
+   *
+   */
+  showSelectedNodesContextGraph() {
+    document.body.classList.add('waiting')
+    if (this.network.getSelectedNodes().length === 0) {
+      document.body.classList.remove('waiting')
+      return new Promise((resolve) => resolve(this.nodes))
+    }
+    return new Promise((resolve) => {
+      const selectedNodes = this.network.getSelectedNodes()
+      const parentNodes = this.getNodesContextGraph(selectedNodes)
+      const renderedNodes = this.nodes.filter((elm) =>
+        parentNodes.includes(elm.id)
+      )
+      this.networkData.nodes.clear()
+      this.networkData.nodes.add(renderedNodes)
+      this.network.focus(selectedNodes[0], {
+        scale: 0.5,
+        animation: {
+          duration: 1000,
+          easingFunctions: 'easeInOutQuad',
+        },
+      })
+      document.body.classList.remove('waiting')
+      resolve(renderedNodes)
+    })
+  }
+  /**
+   * Show all nodes
+   */
+  showAllNodes() {
+    document.body.classList.add('waiting')
+    return new Promise((resolve) => {
+      this.networkData.nodes.clear()
+      this.networkData.nodes.add(this.nodes)
+      document.body.classList.remove('waiting')
+      resolve(this.nodes)
+    })
   }
 }
 
