@@ -183,7 +183,7 @@ body.waiting * {
   cursor: pointer;
 }
 
-#visualization {
+#main {
   display: none;
   /* display: flex; */
   width: 100vw;

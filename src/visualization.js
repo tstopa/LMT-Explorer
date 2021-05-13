@@ -204,7 +204,11 @@ class Visualization {
     this.networkData.nodes.add(this.nodes)
     this.networkData.edges.add(this.edges)
   }
-
+  /**
+   * Get an array of nodes that are connected or interconnected to the nodes given as an argument
+   * @param {Array} selectedNodes
+   * @returns an array of nodes that are connected or interconnected to the nodes given as an argument
+   */
   getNodesContextGraph(selectedNodes) {
     const contextGraph = selectedNodes
     const getParentNode = (nodes) => {
@@ -223,7 +227,10 @@ class Visualization {
     getParentNode(selectedNodes)
     return [...new Set(contextGraph)]
   }
-
+  /**
+   *  Show selected nodes context graph
+   *
+   */
   showSelectedNodesContextGraph() {
     document.body.classList.add('waiting')
     if (this.network.getSelectedNodes().length === 0) {
@@ -249,7 +256,9 @@ class Visualization {
       resolve(renderedNodes)
     })
   }
-
+  /**
+   * Show all nodes
+   */
   showAllNodes() {
     document.body.classList.add('waiting')
     return new Promise((resolve) => {

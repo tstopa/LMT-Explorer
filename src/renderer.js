@@ -29,7 +29,7 @@ const handleFileUpload = (src) => {
     return
   }
   document.getElementById('upload').style.display = 'none'
-  document.getElementById('visualization').style.display = 'flex'
+  document.getElementById('main').style.display = 'flex'
   visualization
     .loadFromCsv(filePath)
     .then(() => {
@@ -38,7 +38,7 @@ const handleFileUpload = (src) => {
     .catch((error) => {
       ipcRenderer.send('show-error', 'The snapshot file is corrupted')
       document.getElementById('upload').style.display = 'flex'
-      document.getElementById('visualization').style.display = 'none'
+      document.getElementById('main').style.display = 'none'
       return
     })
 }
@@ -126,11 +126,9 @@ searchbar.addEventListener('input', (evt) => {
     )
   )
 })
-document
-  .getElementById('visualization')
-  .addEventListener('contextmenu', (evt) => {
-    ipcRenderer.send('pop-visualization-ctx-menu')
-  })
+document.getElementById('main').addEventListener('contextmenu', (evt) => {
+  ipcRenderer.send('pop-visualization-ctx-menu')
+})
 ipcRenderer.on('show-selected-products', (evt, args) => {
   visualization.showSelectedNodesContextGraph().then((result) => {
     hydrateSearchResults(searchProducts(result))
