@@ -1,13 +1,12 @@
 import './index.css'
 const { Visualization } = require('./visualization')
 const { FileUpload } = require('./fileUpload')
+const { Sidebar } = require('./sidebar')
 const { ipcRenderer } = require('electron')
+const { Router, Route } = require('./router')
 const AdmZip = require('adm-zip')
 const uuid = require('uuid')
-const { Router, Route } = require('./router')
 const tempDirectory = require('temp-dir')
-const searchbar = document.getElementById('search')
-const searchResults = document.getElementById('search_result')
 
 const pvu = new Route(
   'pvu',
@@ -44,7 +43,11 @@ const handleFileUpload = (src) => {
   pvuSubCapacityVisualization
     .loadFromCsv(filesPath + '/pvu_sub_capacity.csv')
     .then(() => {
-      hydrateSearchResults(searchProducts(pvuSubCapacityVisualization.nodes))
+      sidebar.hydrateSearchResults(
+        pvuSubCapacityVisualization.nodes
+          .filter((elm) => elm.group == 'product')
+          .map((elm) => elm.id)
+      )
     })
     .catch((error) => {
       ipcRenderer.send('show-error', 'The snapshot file is corrupted')
@@ -66,94 +69,13 @@ ipcRenderer.on('open-file-request-response', (event, arg) => {
   handleFileUpload(arg)
 })
 
-//on node selection update handler
-const onNodeSelectionUpdate = () => {
-  const selectedNodes = pvuSubCapacityVisualization.network.getSelectedNodes()
-  for (const element of searchResults.childNodes) {
-    if (selectedNodes.includes(element.dataset.id)) {
-      element.classList.add('selected')
-    } else {
-      element.classList.remove('selected')
-    }
-  }
-  //TODO get selected graph for daily usage plot
-}
+const sidebar = new Sidebar(
+  document.getElementById('search'),
+  document.getElementById('search_result')
+)
 //create visualization instance
 const pvuSubCapacityVisualization = new Visualization(
   document.getElementById('pvu'),
   {},
-  onNodeSelectionUpdate
+  'PVU'
 )
-
-//search for products
-const searchProducts = (nodes, query) => {
-  if (query) {
-    return nodes.filter(
-      (element) =>
-        element.group === 'product' &&
-        element.label.toLowerCase().includes(query.toLowerCase())
-    )
-  }
-  return nodes.filter((element) => element.group === 'product')
-}
-
-//update search results
-const hydrateSearchResults = (nodes) => {
-  searchResults.innerHTML = ''
-  for (const node of nodes) {
-    const p = document.createElement('p')
-    p.innerText = node.id
-    p.dataset.id = node.id
-    p.addEventListener('click', onResultClick)
-    searchResults.appendChild(p)
-  }
-  onNodeSelectionUpdate()
-}
-//focus on the selected product
-const onResultClick = (evt) => {
-  if (window.event.ctrlKey) {
-    if (evt.target.classList.contains('selected')) {
-      pvuSubCapacityVisualization.network.selectNodes(
-        pvuSubCapacityVisualization.network
-          .getSelectedNodes()
-          .filter((elm) => elm !== evt.target.dataset.id)
-      )
-    } else {
-      pvuSubCapacityVisualization.network.selectNodes([
-        ...pvuSubCapacityVisualization.network.getSelectedNodes(),
-        evt.target.dataset.id,
-      ])
-    }
-  } else {
-    pvuSubCapacityVisualization.network.selectNodes([evt.target.dataset.id])
-  }
-  onNodeSelectionUpdate()
-  pvuSubCapacityVisualization.network.focus(evt.target.dataset.id, {
-    scale: 1,
-    animation: {
-      duration: 1000,
-      easingFunctions: 'easeInOutQuad',
-    },
-  })
-}
-//handle search
-searchbar.addEventListener('input', (evt) => {
-  hydrateSearchResults(
-    searchProducts(
-      pvuSubCapacityVisualization.networkData.nodes.map((e) => e),
-      evt.target.value
-    )
-  )
-})
-//show only selected
-document.getElementById('show-selected').addEventListener('click', () => {
-  pvuSubCapacityVisualization.showSelectedNodesContextGraph().then((result) => {
-    hydrateSearchResults(searchProducts(result))
-  })
-})
-//show all
-document.getElementById('show-all').addEventListener('click', () => {
-  pvuSubCapacityVisualization.showAllNodes().then((result) => {
-    hydrateSearchResults(searchProducts(result))
-  })
-})

@@ -1,5 +1,3 @@
-const { forEach } = require('vis-util')
-
 class Router {
   constructor(routes) {
     this.routes = routes

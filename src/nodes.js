@@ -53,10 +53,15 @@ class Product {
    * To create the product node object, provide parsed row of the ILMT report file
    * @param {Array} row
    */
-  constructor(row) {
+  constructor(row, metric) {
     this.id = row['Product Name']
     this.label =
-      row['Product Name'] + '\n <b>' + row['Metric Quantity'] + ' PVU</b>'
+      row['Product Name'] +
+      '\n <b>' +
+      row['Metric Quantity'] +
+      ' ' +
+      metric +
+      '</b>'
     this.group = 'product'
     this.level = 3
     this.pvu = row['Metric Quantity']
