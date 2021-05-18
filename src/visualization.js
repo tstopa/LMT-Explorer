@@ -1,6 +1,7 @@
 const { Network } = require('vis-network/peer/esm/vis-network')
 const { DataSet } = require('vis-data/peer/esm/vis-data')
 const { Server, Computer, Component, Product } = require('./nodes')
+const hermes = require('./hermes')
 const fs = require('fs')
 const csv = require('csv-parser')
 const { resolve } = require('path')
@@ -66,21 +67,19 @@ class Visualization {
       ...option,
     })
     this.network.on('selectNode', () =>
-      document.dispatchEvent(
-        new CustomEvent('visualizationProductSelection', {
-          detail: this.network.getSelectedNodes(),
-        })
+      hermes.send(
+        'visualizationProductSelection',
+        this.network.getSelectedNodes()
       )
     )
     this.network.on('deselectNode', () =>
-      document.dispatchEvent(
-        new CustomEvent('visualizationProductSelection', {
-          detail: this.network.getSelectedNodes(),
-        })
+      hermes.send(
+        'visualizationProductSelection',
+        this.network.getSelectedNodes()
       )
     )
-    document.addEventListener('sidebarProductSelection', (evt) => {
-      const selected = evt.detail
+    hermes.on('sidebarProductSelection', (evt) => {
+      const selected = evt
       this.network.setSelection({ nodes: selected })
       this.network.focus(selected[selected.length - 1], {
         scale: 1,
@@ -90,11 +89,11 @@ class Visualization {
         },
       })
     })
-    document.addEventListener(
+    hermes.on(
       'clickShowSelected',
       this.showSelectedNodesContextGraph.bind(this)
     )
-    document.addEventListener('clickShowAll', this.showAllNodes.bind(this))
+    hermes.on('clickShowAll', this.showAllNodes.bind(this))
   }
   /**
    * load visualization of given file
@@ -281,12 +280,11 @@ class Visualization {
         },
       })
       document.body.classList.remove('waiting')
-      document.dispatchEvent(
-        new CustomEvent('updateProducts', {
-          detail: renderedNodes
-            .filter((elm) => elm.group === 'product')
-            .map((elm) => elm.id),
-        })
+      hermes.send(
+        'updateProducts',
+        renderedNodes
+          .filter((elm) => elm.group === 'product')
+          .map((elm) => elm.id)
       )
       resolve(renderedNodes)
     })
@@ -300,12 +298,9 @@ class Visualization {
       this.networkData.nodes.clear()
       this.networkData.nodes.add(this.nodes)
       document.body.classList.remove('waiting')
-      document.dispatchEvent(
-        new CustomEvent('updateProducts', {
-          detail: this.nodes
-            .filter((elm) => elm.group == 'product')
-            .map((elm) => elm.id),
-        })
+      hermes.send(
+        'updateProducts',
+        this.nodes.filter((elm) => elm.group == 'product').map((elm) => elm.id)
       )
       resolve(this.nodes)
     })
