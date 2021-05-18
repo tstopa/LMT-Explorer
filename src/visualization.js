@@ -13,11 +13,11 @@ class Visualization {
    * @param {Element} networkContainer
    * @param {Object} option visjs network options @see https://visjs.github.io/vis-network/docs/network/
    */
-  constructor(networkContainer, option, onNodeSelected) {
+  constructor(networkContainer, option, metric = 'PVU') {
     this.networkContainer = networkContainer
     this.nodes = []
     this.edges = []
-    this.onNodeSelectionUpdate = onNodeSelected
+    this.metric = metric
     this.networkData = {
       nodes: new DataSet([]),
       edges: new DataSet([]),
@@ -65,8 +65,36 @@ class Visualization {
       ...this.networkOptions,
       ...option,
     })
-    this.network.on('selectNode', this.onNodeSelectionUpdate)
-    this.network.on('deselectNode', this.onNodeSelectionUpdate)
+    this.network.on('selectNode', () =>
+      document.dispatchEvent(
+        new CustomEvent('visualizationProductSelection', {
+          detail: this.network.getSelectedNodes(),
+        })
+      )
+    )
+    this.network.on('deselectNode', () =>
+      document.dispatchEvent(
+        new CustomEvent('visualizationProductSelection', {
+          detail: this.network.getSelectedNodes(),
+        })
+      )
+    )
+    document.addEventListener('sidebarProductSelection', (evt) => {
+      const selected = evt.detail
+      this.network.setSelection({ nodes: selected })
+      this.network.focus(selected[selected.length - 1], {
+        scale: 1,
+        animation: {
+          duration: 1000,
+          easingFunctions: 'easeInOutQuad',
+        },
+      })
+    })
+    document.addEventListener(
+      'clickShowSelected',
+      this.showSelectedNodesContextGraph.bind(this)
+    )
+    document.addEventListener('clickShowAll', this.showAllNodes.bind(this))
   }
   /**
    * load visualization of given file
@@ -165,7 +193,7 @@ class Visualization {
     }
 
     //push product to the network
-    const product = new Product(row)
+    const product = new Product(row, this.metric)
     if (!this.nodeExist(product)) {
       this.nodes.push(product)
     }
@@ -253,6 +281,13 @@ class Visualization {
         },
       })
       document.body.classList.remove('waiting')
+      document.dispatchEvent(
+        new CustomEvent('updateProducts', {
+          detail: renderedNodes
+            .filter((elm) => elm.group === 'product')
+            .map((elm) => elm.id),
+        })
+      )
       resolve(renderedNodes)
     })
   }
@@ -265,6 +300,13 @@ class Visualization {
       this.networkData.nodes.clear()
       this.networkData.nodes.add(this.nodes)
       document.body.classList.remove('waiting')
+      document.dispatchEvent(
+        new CustomEvent('updateProducts', {
+          detail: this.nodes
+            .filter((elm) => elm.group == 'product')
+            .map((elm) => elm.id),
+        })
+      )
       resolve(this.nodes)
     })
   }

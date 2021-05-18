@@ -192,13 +192,55 @@ body.waiting * {
   justify-content: space-evenly;
   align-items: center;
 }
-#mynetwork {
+.view {
   background-color: #f3f3f3;
   width: 70vw;
-  height: 90vh;
+  height: 85vh;
   outline: none;
   border: none;
+  margin-top: 0;
 }
+.nav {
+  height: 5vh;
+  width: 70vw;
+}
+.nav ul {
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+}
+.nav ul li {
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  display: flex;
+  flex-direction: row;
+  justify-items: center;
+  align-items: center;
+  box-sizing: border-box;
+  background-color: #f3f3f3;
+  height: 4.5vh;
+  max-width: 20vw;
+  margin-left: 0.5rem;
+  width: 100%;
+  font-weight: bold;
+  padding-left: 5px;
+  user-select: none;
+}
+
+.nav ul li.active {
+  background-color: #096bdb;
+  color: white;
+}
+.nav ul li:hover {
+  cursor: pointer;
+  background-color: #004faa;
+  color: white;
+}
+.nav ul li:nth-child(1) {
+  margin-left: 0;
+}
+
 .details {
   text-align: center;
   width: 25vw;

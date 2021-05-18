@@ -17,16 +17,28 @@
     </form>
   </div>
   <div id="main">
-    <div id="mynetwork"></div>
+    <div>
+      <nav id="nav" class="nav">
+        <ul>
+          <li id="pvu-tab">PVU-SUBCAPACITY</li>
+          <li id="daily-tab">DAILY-USAGE</li>
+        </ul>
+      </nav>
+      <div class="view" id="pvu"></div>
+      <div class="view" id="daily">
+        daily usage
+      </div>
+    </div>
     <div class="details">
       <input id="search" placeholder="Search for product..." type="text"><br>
       <label for="search">software products:</label>
       <div id="search_result"></div>
       <div class="button-wrapper">
         <button id="show-all">show all</button>
-        <button id="show-selected">show selected products graph</button>
+        <button id="show-selected">show selected products</button>
       </div>
     </div>
+  </div>
   </div>
   </script>
 </body>

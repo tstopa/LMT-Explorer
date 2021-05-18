@@ -1,39 +1,53 @@
 import './index.css'
 const { Visualization } = require('./visualization')
 const { FileUpload } = require('./fileUpload')
+const { Sidebar } = require('./sidebar')
 const { ipcRenderer } = require('electron')
+const { Router, Route } = require('./router')
 const AdmZip = require('adm-zip')
 const uuid = require('uuid')
 const tempDirectory = require('temp-dir')
-const container = document.getElementById('mynetwork')
-const searchbar = document.getElementById('search')
-const searchResults = document.getElementById('search_result')
+
+const pvu = new Route(
+  'pvu',
+  document.getElementById('pvu'),
+  document.getElementById('pvu-tab')
+)
+const daily = new Route(
+  'daily',
+  document.getElementById('daily'),
+  document.getElementById('daily-tab')
+)
+const router = new Router([pvu, daily])
+router.show('pvu')
 
 const handleFileUpload = (src) => {
-  let filePath = src
-  if (filePath.split('.').pop() === 'zip') {
-    try {
-      const zip = new AdmZip(src)
-      filePath = tempDirectory + uuid.v4()
-      zip.extractEntryTo('pvu_sub_capacity.csv', filePath, true)
-      filePath += '/pvu_sub_capacity.csv'
-    } catch (exception) {
-      ipcRenderer.send(
-        'show-error',
-        'It looks like the selected archive does not contain the appropriate files or there is not enough disk space on this computer to unpack it'
-      )
-      return
-    }
-  } else if (filePath.split('.').pop() !== 'csv') {
-    ipcRenderer.send('show-error', 'Selected file is not supported')
+  let filesPath = ''
+  if (src.split('.').pop() !== 'zip') {
+    ipcRenderer.send('show-error', 'Select ILMT snapshot zip archive')
+  }
+  try {
+    const zip = new AdmZip(src)
+    filesPath = tempDirectory + uuid.v4()
+    zip.extractEntryTo('pvu_sub_capacity.csv', filesPath, true)
+  } catch (exception) {
+    ipcRenderer.send(
+      'show-error',
+      'It looks like the selected archive does not contain the appropriate files or there is not enough disk space on this computer to unpack it'
+    )
     return
   }
+
   document.getElementById('upload').style.display = 'none'
   document.getElementById('main').style.display = 'flex'
-  visualization
-    .loadFromCsv(filePath)
+  pvuSubCapacityVisualization
+    .loadFromCsv(filesPath + '/pvu_sub_capacity.csv')
     .then(() => {
-      hydrateSearchResults(searchProducts(visualization.nodes))
+      sidebar.hydrateSearchResults(
+        pvuSubCapacityVisualization.nodes
+          .filter((elm) => elm.group == 'product')
+          .map((elm) => elm.id)
+      )
     })
     .catch((error) => {
       ipcRenderer.send('show-error', 'The snapshot file is corrupted')
@@ -42,7 +56,6 @@ const handleFileUpload = (src) => {
       return
     })
 }
-
 //create file upload instance
 const fileUpload = new FileUpload(
   document.getElementById('upload_container'),
@@ -56,99 +69,13 @@ ipcRenderer.on('open-file-request-response', (event, arg) => {
   handleFileUpload(arg)
 })
 
+const sidebar = new Sidebar(
+  document.getElementById('search'),
+  document.getElementById('search_result')
+)
 //create visualization instance
-const onNodeSelectionUpdate = () => {
-  const selectedNodes = visualization.network.getSelectedNodes()
-  for (const element of searchResults.childNodes) {
-    if (selectedNodes.includes(element.dataset.id)) {
-      element.classList.add('selected')
-    } else {
-      element.classList.remove('selected')
-    }
-  }
-}
-const visualization = new Visualization(container, {}, onNodeSelectionUpdate)
-
-const searchProducts = (nodes, query) => {
-  if (query) {
-    return nodes.filter(
-      (element) =>
-        element.group === 'product' &&
-        element.label.toLowerCase().includes(query.toLowerCase())
-    )
-  }
-  return nodes.filter((element) => element.group === 'product')
-}
-const hydrateSearchResults = (nodes) => {
-  searchResults.innerHTML = ''
-  for (const node of nodes) {
-    const p = document.createElement('p')
-    p.innerText = node.id
-    p.dataset.id = node.id
-    p.addEventListener('click', onResultClick)
-    searchResults.appendChild(p)
-  }
-  onNodeSelectionUpdate()
-}
-//focus on the selected product
-const onResultClick = (evt) => {
-  if (window.event.ctrlKey) {
-    if (evt.target.classList.contains('selected')) {
-      visualization.network.selectNodes(
-        visualization.network
-          .getSelectedNodes()
-          .filter((elm) => elm !== evt.target.dataset.id)
-      )
-    } else {
-      visualization.network.selectNodes([
-        ...visualization.network.getSelectedNodes(),
-        evt.target.dataset.id,
-      ])
-    }
-  } else {
-    visualization.network.selectNodes([evt.target.dataset.id])
-  }
-  onNodeSelectionUpdate()
-  visualization.network.focus(evt.target.dataset.id, {
-    scale: 1,
-    animation: {
-      duration: 1000,
-      easingFunctions: 'easeInOutQuad',
-    },
-  })
-}
-//handle searchbox input
-searchbar.addEventListener('input', (evt) => {
-  hydrateSearchResults(
-    searchProducts(
-      visualization.networkData.nodes.map((e) => e),
-      evt.target.value
-    )
-  )
-})
-document.getElementById('main').addEventListener('contextmenu', (evt) => {
-  ipcRenderer.send('pop-visualization-ctx-menu')
-})
-ipcRenderer.on('show-selected-products', (evt, args) => {
-  visualization.showSelectedNodesContextGraph().then((result) => {
-    hydrateSearchResults(searchProducts(result))
-  })
-})
-
-document.getElementById('show-selected').addEventListener('click', () => {
-  visualization.showSelectedNodesContextGraph().then((result) => {
-    hydrateSearchResults(searchProducts(result))
-  })
-})
-
-ipcRenderer.on('show-all-products', (evt, args) => {
-  visualization.showAllNodes().then((result) => {
-    hydrateSearchResults(searchProducts(result))
-  })
-})
-
-document.getElementById('show-all').addEventListener('click', () => {
-  visualization.showAllNodes().then((result) => {
-    hydrateSearchResults(searchProducts(result))
-  })
-})
+const pvuSubCapacityVisualization = new Visualization(
+  document.getElementById('pvu'),
+  {},
+  'PVU'
+)
