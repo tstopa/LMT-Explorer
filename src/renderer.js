@@ -18,7 +18,17 @@ const daily = new Route(
   document.getElementById('daily'),
   document.getElementById('daily-tab')
 )
-const router = new Router([pvu, daily])
+const cloudpak = new Route(
+  'cloudpak',
+  document.getElementById('cloudpak'),
+  document.getElementById('cloudpak-tab')
+)
+const health = new Route(
+  'health',
+  document.getElementById('health'),
+  document.getElementById('health-tab')
+)
+const router = new Router([pvu, daily, cloudpak, health])
 router.show('pvu')
 
 const handleFileUpload = (src) => {
