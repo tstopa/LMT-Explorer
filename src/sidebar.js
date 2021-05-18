@@ -1,3 +1,4 @@
+const hermes = require('./hermes')
 class Sidebar {
   constructor(searchbar, searchResults) {
     this.searchbar = searchbar
@@ -9,18 +10,18 @@ class Sidebar {
         this.searchProducts(this.nodes, evt.target.value)
       )
     })
-    document.addEventListener('visualizationProductSelection', (evt) => {
-      this.updateNodesSelection(evt.detail)
+    hermes.on('visualizationProductSelection', (evt) => {
+      this.updateNodesSelection(evt)
     })
     document.getElementById('show-selected').addEventListener('click', () => {
-      document.dispatchEvent(new CustomEvent('clickShowSelected'))
+      hermes.send('clickShowSelected')
     })
     document.getElementById('show-all').addEventListener('click', () => {
-      document.dispatchEvent(new CustomEvent('clickShowAll'))
+      hermes.send('clickShowAll')
     })
-    document.addEventListener('updateProducts', (evt) => {
-      this.node = evt.detail
-      this.hydrateSearchResults(evt.detail)
+    hermes.on('updateProducts', (evt) => {
+      this.node = evt
+      this.hydrateSearchResults(evt)
     })
   }
   updateNodesSelection(selectedNodes) {
@@ -71,11 +72,7 @@ class Sidebar {
       this.selectedNodes = [evt.target.dataset.id]
     }
     this.updateNodesSelection(this.selectedNodes)
-    document.dispatchEvent(
-      new CustomEvent('sidebarProductSelection', {
-        detail: this.selectedNodes,
-      })
-    )
+    hermes.send('sidebarProductSelection', this.selectedNodes)
   }
 }
 
