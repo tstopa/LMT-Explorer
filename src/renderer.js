@@ -4,10 +4,12 @@ const { FileUpload } = require('./fileUpload')
 const { Sidebar } = require('./sidebar')
 const { ipcRenderer } = require('electron')
 const { Router, Route } = require('./router')
+const { HealthCheck } = require('./healthCheck')
 const AdmZip = require('adm-zip')
 const uuid = require('uuid')
 const tempDirectory = require('temp-dir')
 
+//define routes
 const pvu = new Route(
   'pvu',
   document.getElementById('pvu'),
@@ -28,9 +30,12 @@ const health = new Route(
   document.getElementById('health'),
   document.getElementById('health-tab')
 )
+//create router
 const router = new Router([pvu, daily, cloudpak, health])
+//show pvu route
 router.show('pvu')
 
+//load file
 const handleFileUpload = (src) => {
   let filesPath = ''
   if (src.split('.').pop() !== 'zip') {
@@ -39,7 +44,7 @@ const handleFileUpload = (src) => {
   try {
     const zip = new AdmZip(src)
     filesPath = tempDirectory + uuid.v4()
-    zip.extractEntryTo('pvu_sub_capacity.csv', filesPath, true)
+    zip.extractAllTo(filesPath, true)
   } catch (exception) {
     ipcRenderer.send(
       'show-error',
@@ -50,6 +55,7 @@ const handleFileUpload = (src) => {
 
   document.getElementById('upload').style.display = 'none'
   document.getElementById('main').style.display = 'flex'
+  healthCheck.readFromFile(filesPath + '/data_condition.txt')
   pvuSubCapacityVisualization
     .loadFromCsv(filesPath + '/pvu_sub_capacity.csv')
     .then(() => {
@@ -89,3 +95,4 @@ const pvuSubCapacityVisualization = new Visualization(
   {},
   'PVU'
 )
+const healthCheck = new HealthCheck(document.getElementById('health'))

@@ -303,3 +303,39 @@ body.waiting * {
   cursor: pointer;
   background-color: rgb(250, 250, 250);
 }
+#health {
+  display: flex;
+  justify-content: center;
+  justify-items: center;
+  align-items: center;
+  align-content: center;
+}
+#health table {
+  top: 4rem;
+  position: relative;
+  margin-right: auto;
+  margin-left: auto;
+}
+#health tr {
+  padding: 2rem;
+}
+#health td {
+  border: 1px dashed black;
+  padding: 1rem;
+}
+#health td.success {
+  font-weight: bold;
+  color: green;
+}
+#health td.warrning {
+  font-weight: bold;
+  color: orange;
+}
+#health td.error {
+  font-weight: bold;
+  color: red;
+}
+#health td.info {
+  font-weight: bold;
+  color: #096bdb;
+}
