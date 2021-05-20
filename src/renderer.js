@@ -6,6 +6,7 @@ const { ipcRenderer } = require('electron')
 const { Router, Route } = require('./router')
 const { HealthCheck } = require('./healthCheck')
 const { Summary } = require('./summary')
+const { CloudPakVisualizator } = require('./cloudPakVisualizator')
 const AdmZip = require('adm-zip')
 const uuid = require('uuid')
 const tempDirectory = require('temp-dir')
@@ -63,6 +64,7 @@ const handleFileUpload = (src) => {
   document.getElementById('main').style.display = 'flex'
   summaryView.readFromFile(filesPath + '/audit_snapshot_summary.csv')
   healthCheck.readFromFile(filesPath + '/data_condition.txt')
+  cloudPakVisualizator.readFromFile(filesPath + '/cloud_paks.csv')
   pvuSubCapacityVisualization
     .loadFromCsv(filesPath + '/pvu_sub_capacity.csv')
     .then(() => {
@@ -101,6 +103,10 @@ const pvuSubCapacityVisualization = new Visualization(
   document.getElementById('pvu'),
   {},
   'PVU'
+)
+const cloudPakVisualizator = new CloudPakVisualizator(
+  document.getElementById('cloudpak'),
+  {}
 )
 const healthCheck = new HealthCheck(document.getElementById('health'))
 const summaryView = new Summary(document.getElementById('summary'))
