@@ -5,6 +5,7 @@ const { Sidebar } = require('./sidebar')
 const { ipcRenderer } = require('electron')
 const { Router, Route } = require('./router')
 const { HealthCheck } = require('./healthCheck')
+const { Summary } = require('./summary')
 const AdmZip = require('adm-zip')
 const uuid = require('uuid')
 const tempDirectory = require('temp-dir')
@@ -30,8 +31,13 @@ const health = new Route(
   document.getElementById('health'),
   document.getElementById('health-tab')
 )
+const summary = new Route(
+  'summary',
+  document.getElementById('summary'),
+  document.getElementById('summary-tab')
+)
 //create router
-const router = new Router([pvu, daily, cloudpak, health])
+const router = new Router([pvu, daily, cloudpak, health, summary])
 //show pvu route
 router.show('pvu')
 
@@ -55,6 +61,7 @@ const handleFileUpload = (src) => {
 
   document.getElementById('upload').style.display = 'none'
   document.getElementById('main').style.display = 'flex'
+  summaryView.readFromFile(filesPath + '/audit_snapshot_summary.csv')
   healthCheck.readFromFile(filesPath + '/data_condition.txt')
   pvuSubCapacityVisualization
     .loadFromCsv(filesPath + '/pvu_sub_capacity.csv')
@@ -96,3 +103,4 @@ const pvuSubCapacityVisualization = new Visualization(
   'PVU'
 )
 const healthCheck = new HealthCheck(document.getElementById('health'))
+const summaryView = new Summary(document.getElementById('summary'))
