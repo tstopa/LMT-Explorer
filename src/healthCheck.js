@@ -90,19 +90,31 @@ class HealthCheck {
       .split(':')[1]
       .trim()
     delayedDataUpload.classList.add(
-      parseInt(delayedDataUpload.innerText) <= 10 ? 'success' : 'error'
+      parseInt(delayedDataUpload.innerText) == 0
+        ? 'success'
+        : parseInt(delayedDataUpload.innerText) <= 10
+        ? 'warrning'
+        : 'error'
     )
     outDatedCapacityScans.innerHTML = results['Data accuracy'][1]
       .split(':')[1]
       .trim()
     outDatedCapacityScans.classList.add(
-      parseInt(outDatedCapacityScans.innerText) <= 10 ? 'success' : 'error'
+      parseInt(outDatedCapacityScans.innerText) == 0
+        ? 'success'
+        : parseInt(outDatedCapacityScans.innerText) <= 10
+        ? 'warrning'
+        : 'error'
     )
     missingSoftwareScans.innerHTML = results['Data accuracy'][2]
       .split(':')[1]
       .trim()
     missingSoftwareScans.classList.add(
-      parseInt(missingSoftwareScans.innerText) <= 10 ? 'success' : 'error'
+      parseInt(missingSoftwareScans.innerText) == 0
+        ? 'success'
+        : parseInt(missingSoftwareScans.innerText) <= 10
+        ? 'warrning'
+        : 'error'
     )
   }
 }
