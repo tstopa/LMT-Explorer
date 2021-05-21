@@ -4,7 +4,6 @@ const { Server, Computer, Component, Product } = require('./nodes')
 const hermes = require('./hermes')
 const fs = require('fs')
 const csv = require('csv-parser')
-const { resolve } = require('path')
 /**
  * Graph visualization class
  */
