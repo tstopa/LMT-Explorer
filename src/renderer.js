@@ -5,10 +5,14 @@ const { FileUpload } = require('./fileUpload')
 const { Sidebar } = require('./sidebar')
 const { ipcRenderer } = require('electron')
 const { Router, Route } = require('./router')
+const { HealthCheck } = require('./healthCheck')
+const { Summary } = require('./summary')
+const { CloudPakVisualizator } = require('./cloudPakVisualizator')
 const AdmZip = require('adm-zip')
 const uuid = require('uuid')
 const tempDirectory = require('temp-dir')
 
+//define routes
 const pvu = new Route(
 	'pvu',
 	document.getElementById('pvu'),
@@ -29,9 +33,17 @@ const health = new Route(
 	document.getElementById('health'),
 	document.getElementById('health-tab')
 )
-const router = new Router([pvu, daily, cloudpak, health])
+const summary = new Route(
+	'summary',
+	document.getElementById('summary'),
+	document.getElementById('summary-tab')
+)
+//create router
+const router = new Router([pvu, daily, cloudpak, health, summary])
+//show pvu route
 router.show('pvu')
 
+//load file
 const handleFileUpload = (src) => {
 	let filesPath = ''
 	if (src.split('.').pop() !== 'zip') {
@@ -51,6 +63,9 @@ const handleFileUpload = (src) => {
 
 	document.getElementById('upload').style.display = 'none'
 	document.getElementById('main').style.display = 'flex'
+	summaryView.readFromFile(filesPath + '/audit_snapshot_summary.csv')
+	healthCheck.readFromFile(filesPath + '/data_condition.txt')
+	cloudPakVisualizator.readFromFile(filesPath + '/cloud_paks.csv')
 	pvuSubCapacityVisualization
 		.loadFromCsv(filesPath + '/pvu_sub_capacity.csv')
 		.then(() => {
@@ -67,7 +82,6 @@ const handleFileUpload = (src) => {
 			return
 		})
 
-	//my space for wirting
 	metricUsageInTime.loadFromCsv(filesPath).catch((error) => {
 		console.log('graph do not work')
 		console.log(error)
@@ -98,3 +112,10 @@ const pvuSubCapacityVisualization = new Visualization(
 )
 
 const metricUsageInTime = new Graph(document.getElementById('graph'), 'options')
+
+const cloudPakVisualizator = new CloudPakVisualizator(
+	document.getElementById('cloudpak'),
+	{}
+)
+const healthCheck = new HealthCheck(document.getElementById('health'))
+const summaryView = new Summary(document.getElementById('summary'))

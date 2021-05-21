@@ -332,3 +332,72 @@ body.waiting * {
 	display: flex;
 	margin: 0.3rem;
 }
+#health {
+  display: flex;
+  justify-content: center;
+  justify-items: center;
+  align-items: center;
+  align-content: center;
+}
+#summary {
+  display: flex;
+  justify-content: center;
+  justify-items: center;
+  align-items: center;
+  align-content: center;
+  overflow-y: scroll;
+}
+#health table {
+  background-color: white;
+  top: 4rem;
+  position: relative;
+  margin-right: auto;
+  margin-left: auto;
+}
+#health tr {
+  padding: 2rem;
+}
+#health tr:nth-child(2n) {
+  background-color: rgb(223, 223, 223);
+}
+#health td {
+  border: 1px solid black;
+  padding: 1rem;
+}
+#health td.success {
+  font-weight: bold;
+  color: green;
+}
+#health td.warrning {
+  font-weight: bold;
+  color: orange;
+}
+#health td.error {
+  font-weight: bold;
+  color: red;
+}
+#health td.info {
+  font-weight: bold;
+  color: #096bdb;
+}
+
+#summary table {
+  background-color: white;
+  margin-right: auto;
+  margin-left: auto;
+}
+#summary tr {
+  padding: 2rem;
+}
+#summary tr:nth-child(2n) {
+  background-color: rgb(223, 223, 223);
+}
+#summary td {
+  border: 1px solid black;
+  padding: 1rem;
+}
+#summary th {
+  border: 1px solid black;
+  padding: 1rem;
+  font-weight: bold;
+}
