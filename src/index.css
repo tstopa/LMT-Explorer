@@ -306,4 +306,29 @@ body.waiting * {
 
 #legend {
 	overflow-y: scroll;
+	max-height: 28vh;
+	padding-top: 0.5rem;
+}
+
+.legend-item {
+	display: inline-block;
+	order: 1;
+	min-width: 1rem;
+	min-height: 1rem;
+	max-height: 1rem;
+	margin-left: 0.3rem;
+	border: 1px solid black;
+}
+
+.legend-subs {
+	order: 2;
+	margin-left: 0.5rem;
+	font-size: 1.1rem;
+	display: inline-block;
+}
+
+.legend-wrapper {
+	color: black;
+	display: flex;
+	margin: 0.3rem;
 }

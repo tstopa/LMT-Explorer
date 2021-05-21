@@ -34,7 +34,10 @@ class Graph {
 				plugins: {
 					title: {
 						display: true,
-						text: 'PVU Usage over time',
+						text: 'Metric usage over time',
+						font: {
+							size: '25rem',
+						},
 					},
 					legend: {
 						display: false,
@@ -54,7 +57,7 @@ class Graph {
 			this.selectedProducts = evt
 		})
 
-		hermes.on('clickShowSelected', (evt) => {
+		hermes.on('clickShowSelected', () => {
 			this.adjustGraphData()
 		})
 
@@ -75,7 +78,7 @@ class Graph {
 
 		this.chart.update()
 
-		//document.getElementById('legend').innerHTML =
+		this.legendGenerator(this.chart.getSortedVisibleDatasetMetas())
 	}
 
 	showAllData() {
@@ -83,7 +86,7 @@ class Graph {
 
 		this.chart.update()
 
-		//	this.legendGenerator(this.chart.getSortedVisibleDatasetMetas())
+		this.legendGenerator(this.chart.getSortedVisibleDatasetMetas())
 	}
 
 	legendGenerator(legendInformation) {
@@ -91,11 +94,24 @@ class Graph {
 		legend.innerHTML = ''
 
 		legendInformation.forEach((item) => {
-			console.log(item._dataset.borderColor)
-			let HTMLElement = document.createElement('li')
-			HTMLElement.style.listStyle = 'none'
-			HTMLElement.innerHTML = ` - ${item.label}`
+			let ProductColor = item._dataset.borderColor
+			let HTMLElement = document.createElement('div')
+			let colorDiv = document.createElement('div')
+
+			HTMLElement.className = 'legend-wrapper'
+			colorDiv.className = 'legend-item'
+			colorDiv.style.backgroundColor = ProductColor
+
 			legend.appendChild(HTMLElement)
+
+			let newChild = legend.children[item.index]
+
+			newChild.appendChild(colorDiv)
+			let text = document.createElement('p')
+			text.className = 'legend-subs'
+			text.innerHTML = `  ${item.label}`
+
+			newChild.appendChild(text)
 		})
 	}
 
@@ -162,7 +178,7 @@ class Graph {
 		let label = new Set()
 		let currentMeasurements = []
 		let colorNumber = 0
-		let colorStep = 51
+		let colorStep = 29
 
 		return new Promise((resolve, reject) => {
 			fs.createReadStream(fileName)
@@ -187,6 +203,7 @@ class Graph {
 							this.colorCreator(200, colorNumber)
 						)
 						colorNumber += colorStep
+						colorNumber %= 200
 						currentMeasurements = []
 						currentProductName = row.name
 					}
