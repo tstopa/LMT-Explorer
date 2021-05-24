@@ -10,6 +10,15 @@ class Bundle {
     this.label = row['FlexPoint or Cloud Pak Bundle']
     this.group = 'bundle'
     this.level = 2
+    this.shape = 'diamond'
+    this.color = {
+      background: '#B803FF',
+      border: '#B803FF',
+      highlight: {
+        border: '#B803FF',
+        background: '#B803FF',
+      },
+    }
   }
 }
 class Product {
@@ -27,6 +36,15 @@ class Product {
     this.metricQuantity = row['Metric Quantity']
     this.metric = row['Metric']
     this.font = { multi: 'html' }
+    this.shape = 'triangle'
+    this.color = {
+      background: '#7BE141',
+      border: '#5EC225',
+      highlight: {
+        border: '#5EC225',
+        background: '#A1EC76',
+      },
+    }
   }
 }
 

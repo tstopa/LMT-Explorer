@@ -54,7 +54,7 @@ class Visualization {
       layout: {
         improvedLayout: true,
         hierarchical: {
-          direction: 'UD',
+          direction: 'DU',
           nodeSpacing: 350,
           sortMethod: 'directed',
         },

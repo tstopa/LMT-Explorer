@@ -12,6 +12,7 @@ class Server {
     this.label = row['Server Name']
     this.group = 'server'
     this.level = 0
+    this.shape = 'hexagon'
   }
 }
 /**
@@ -28,6 +29,7 @@ class Computer {
     this.label = row['Computer']
     this.group = 'computer'
     this.level = 1
+    this.shape = 'star'
   }
 }
 /**
@@ -66,6 +68,7 @@ class Product {
     this.level = 3
     this.pvu = row['Metric Quantity']
     this.font = { multi: 'html' }
+    this.shape = 'triangle'
   }
 }
 exports.Server = Server
