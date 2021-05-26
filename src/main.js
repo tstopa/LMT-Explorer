@@ -1,4 +1,11 @@
-const { app, BrowserWindow, dialog, ipcMain, Menu } = require('electron')
+const {
+  app,
+  BrowserWindow,
+  dialog,
+  ipcMain,
+  Menu,
+  MenuItem,
+} = require('electron')
 const path = require('path')
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -6,11 +13,13 @@ if (require('electron-squirrel-startup')) {
   app.quit()
 }
 let mainWindow = null
+
 const createWindow = () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
+    resizable: false,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -54,6 +63,23 @@ const createWindow = () => {
         },
       ],
     },
+    {
+      label: 'Help',
+      click() {
+        const options = {
+          type: 'question',
+          buttons: ['Close'],
+          title: 'About',
+          message: 'About LMT Explorer',
+          detail:
+            'This tool is used to visualize and make simpler reading IBM License Metric Tool audit snapshot based on PVU sub-capacity metric.\nlink to the most recent realese and source code: https://github.com/tstopa/LMT-Explorer\nLicence: MIT\nAuthors: Kacper Szot, Michał Skoryk',
+        }
+        dialog.showMessageBox(null, options, (response, checkboxChecked) => {
+          console.log(response)
+          console.log(checkboxChecked)
+        })
+      },
+    },
   ])
   Menu.setApplicationMenu(menu)
   // and load the index.html of the app.
@@ -70,6 +96,25 @@ app.on('ready', createWindow)
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
+
+const visualizationCtxMenu = new Menu()
+visualizationCtxMenu.append(
+  new MenuItem({
+    label: 'show selected products context',
+    click: () => mainWindow.webContents.send('show-selected-products'),
+  })
+)
+visualizationCtxMenu.append(
+  new MenuItem({
+    label: 'show all products context',
+    click: () => mainWindow.webContents.send('show-all-products'),
+  })
+)
+
+ipcMain.on('pop-visualization-ctx-menu', (evnt, args) => {
+  visualizationCtxMenu.popup()
+})
+
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()

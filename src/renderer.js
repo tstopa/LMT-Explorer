@@ -1,48 +1,93 @@
 import './index.css'
-const { Visualization } = require('./visualization')
+import Graph from './graphDrawer'
+const { Visualization } = require('./pvuVisualization')
 const { FileUpload } = require('./fileUpload')
+const { Sidebar } = require('./sidebar')
 const { ipcRenderer } = require('electron')
+const { Router, Route } = require('./router')
+const { HealthCheck } = require('./healthCheck')
+const { Summary } = require('./summary')
+const { CloudPakVisualizator } = require('./cloudPakVisualizator')
 const AdmZip = require('adm-zip')
 const uuid = require('uuid')
 const tempDirectory = require('temp-dir')
-const container = document.getElementById('mynetwork')
-const searchbar = document.getElementById('search')
-const searchResults = document.getElementById('search_result')
 
+//define routes
+const pvu = new Route(
+  'pvu',
+  document.getElementById('pvu'),
+  document.getElementById('pvu-tab')
+)
+const daily = new Route(
+  'daily',
+  document.getElementById('daily'),
+  document.getElementById('daily-tab')
+)
+const cloudpak = new Route(
+  'cloudpak',
+  document.getElementById('cloudpak'),
+  document.getElementById('cloudpak-tab')
+)
+const health = new Route(
+  'health',
+  document.getElementById('health'),
+  document.getElementById('health-tab')
+)
+const summary = new Route(
+  'summary',
+  document.getElementById('summary'),
+  document.getElementById('summary-tab')
+)
+//create router
+const router = new Router([pvu, daily, cloudpak, health, summary])
+//show pvu route
+router.show('summary')
+
+//load file
 const handleFileUpload = (src) => {
-  let filePath = src
-  if (filePath.split('.').pop() === 'zip') {
-    try {
-      const zip = new AdmZip(src)
-      filePath = tempDirectory + uuid.v4()
-      zip.extractEntryTo('pvu_sub_capacity.csv', filePath, true)
-      filePath += '/pvu_sub_capacity.csv'
-    } catch (exception) {
-      ipcRenderer.send(
-        'show-error',
-        'It looks like the selected archive does not contain the appropriate files or there is not enough disk space on this computer to unpack it'
-      )
-      return
-    }
-  } else if (filePath.split('.').pop() !== 'csv') {
-    ipcRenderer.send('show-error', 'Selected file is not supported')
+  let filesPath = ''
+  if (src.split('.').pop() !== 'zip') {
+    ipcRenderer.send('show-error', 'Select ILMT snapshot zip archive')
+  }
+  try {
+    const zip = new AdmZip(src)
+    filesPath = tempDirectory + uuid.v4()
+    zip.extractAllTo(filesPath, true)
+  } catch (exception) {
+    ipcRenderer.send(
+      'show-error',
+      'It looks like the selected archive does not contain the appropriate files or there is not enough disk space on this computer to unpack it'
+    )
     return
   }
+
   document.getElementById('upload').style.display = 'none'
-  document.getElementById('visualization').style.display = 'flex'
-  visualization
-    .loadFromCsv(filePath)
+  document.getElementById('main').style.display = 'flex'
+
+  summaryView.readFromFile(filesPath + '/audit_snapshot_summary.csv')
+  healthCheck.readFromFile(filesPath + '/data_condition.txt')
+  cloudPakVisualizator.readFromFile(filesPath + '/cloud_paks.csv')
+  pvuSubCapacityVisualization
+    .loadFromCsv(filesPath + '/pvu_sub_capacity.csv')
     .then(() => {
-      hydrateSearchResults(searchProducts(visualization.nodes))
+      sidebar.hydrateSearchResults(
+        pvuSubCapacityVisualization.nodes
+          .filter((elm) => elm.group == 'product')
+          .map((elm) => elm.id)
+      )
     })
     .catch((error) => {
       ipcRenderer.send('show-error', 'The snapshot file is corrupted')
       document.getElementById('upload').style.display = 'flex'
-      document.getElementById('visualization').style.display = 'none'
+      document.getElementById('main').style.display = 'none'
       return
     })
-}
 
+  metricUsageInTime.loadFromCsv(filesPath).catch((error) => {
+    console.log('graph do not work')
+    console.log(error)
+  })
+}
 //create file upload instance
 const fileUpload = new FileUpload(
   document.getElementById('upload_container'),
@@ -56,41 +101,22 @@ ipcRenderer.on('open-file-request-response', (event, arg) => {
   handleFileUpload(arg)
 })
 
+const sidebar = new Sidebar(
+  document.getElementById('search'),
+  document.getElementById('search_result')
+)
 //create visualization instance
-const visualization = new Visualization(container)
+const pvuSubCapacityVisualization = new Visualization(
+  document.getElementById('pvu'),
+  {},
+  'PVU'
+)
 
-const searchProducts = (nodes, query) => {
-  if (query) {
-    return nodes.filter(
-      (element) =>
-        element.group === 'product' &&
-        element.label.toLowerCase().includes(query.toLowerCase())
-    )
-  }
-  return nodes.filter((element) => element.group === 'product')
-}
-const hydrateSearchResults = (nodes) => {
-  searchResults.innerHTML = ''
-  for (const node of nodes) {
-    const p = document.createElement('p')
-    p.innerText = node.id
-    p.dataset.id = node.id
-    p.addEventListener('click', onResultClick)
-    searchResults.appendChild(p)
-  }
-}
-//focus on the selected product
-const onResultClick = (evt) => {
-  visualization.network.selectNodes([evt.target.dataset.id])
-  visualization.network.focus(evt.target.dataset.id, {
-    scale: 1,
-    animation: {
-      duration: 1000,
-      easingFunctions: 'easeInOutQuad',
-    },
-  })
-}
-//handle searchbox input
-searchbar.addEventListener('input', (evt) => {
-  hydrateSearchResults(searchProducts(visualization.nodes, evt.target.value))
-})
+const metricUsageInTime = new Graph(document.getElementById('graph'), 'options')
+
+const cloudPakVisualizator = new CloudPakVisualizator(
+  document.getElementById('cloudpak'),
+  {}
+)
+const healthCheck = new HealthCheck(document.getElementById('health'))
+const summaryView = new Summary(document.getElementById('summary'))
