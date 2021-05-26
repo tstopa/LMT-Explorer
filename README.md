@@ -6,7 +6,7 @@ This tool is used to visualize and make simpler reading [IBM License Metric Tool
 
 ## Installation
 
-1. Go to the [releases](./releases) site by clicking it on the right panel or adding `/releases` to the web address.
+1. Go to the [releases](https://github.com/tstopa/LMT-Explorer/releases) site by clicking it on the right panel or adding `/releases` to the web address.
 2. Download the installer [here](https://github.com/tstopa/LMT-Explorer/releases/download/1.0.0/LMT.Explorer-1.0.0.Setup.exe).
 3. Run the installer and that's all.
 

@@ -1,7 +1,7 @@
 {
   "name": "lmt-explorer",
   "productName": "LMT Explorer",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "ILMT Audit Snapshot Explorer ",
   "main": ".webpack/main",
   "scripts": {
