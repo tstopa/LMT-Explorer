@@ -7,7 +7,7 @@ const csv = require('csv-parser')
 /**
  * Graph visualization class
  */
-class Visualization {
+class PvuVisualization {
   /**
    * Create new graph visualization
    * @param {Element} networkContainer
@@ -306,4 +306,4 @@ class Visualization {
   }
 }
 
-exports.Visualization = Visualization
+exports.Visualization = PvuVisualization

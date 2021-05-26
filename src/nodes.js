@@ -9,10 +9,12 @@ class Server {
    */
   constructor(row) {
     this.id = row['Server Name']
-    this.label = row['Server Name']
+    this.label =
+      row['Server Name'] + '\n <b>' + row['PVU Per Core'] + ' PVU Per Core</b>'
     this.group = 'server'
     this.level = 0
     this.shape = 'hexagon'
+    this.font = { multi: 'html' }
   }
 }
 /**

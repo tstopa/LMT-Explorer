@@ -65,15 +65,20 @@ const createWindow = () => {
     },
     {
       label: 'Help',
-      submenu: [
-        {
-          label: 'Manual',
-          accelerator: 'CmdOrCtrl+h',
-        },
-        {
-          label: 'About',
-        },
-      ],
+      click() {
+        const options = {
+          type: 'question',
+          buttons: ['Close'],
+          title: 'About',
+          message: 'About LMT Explorer',
+          detail:
+            'This tool is used to visualize and make simpler reading IBM License Metric Tool audit snapshot based on PVU sub-capacity metric.\nlink to the most recent realese and source code: https://github.com/tstopa/LMT-Explorer\nLicence: MIT\nAuthors: Kacper Szot, Michał Skoryk',
+        }
+        dialog.showMessageBox(null, options, (response, checkboxChecked) => {
+          console.log(response)
+          console.log(checkboxChecked)
+        })
+      },
     },
   ])
   Menu.setApplicationMenu(menu)

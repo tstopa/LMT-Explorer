@@ -89,7 +89,7 @@ class CloudPakVisualizator {
       layout: {
         improvedLayout: true,
         hierarchical: {
-          direction: 'UD',
+          direction: 'DU',
           nodeSpacing: 350,
           sortMethod: 'directed',
         },
@@ -129,26 +129,44 @@ class CloudPakVisualizator {
           if (this.nodes.length < 3) {
             reject('the file does not contain the required headers')
           }
-          console.log(this.nodes)
           resolve(this.nodes)
         })
     })
   }
   addRow(row) {
     const product = new Product(row)
-    if (!this.nodeExist(product)) {
-      this.nodes.push(product)
-    }
     const bundle = new Bundle(row)
-    if (!this.nodeExist(bundle)) {
-      this.nodes.push(bundle)
-    }
-    if (!this.edgeExist(product, bundle)) {
-      this.edges.push({
-        from: product.id,
-        to: bundle.id,
-        label: row['Bundle Metric Contribution'],
-      })
+    if (bundle.label == 'None') {
+      let node = {
+        id: row['Product Name'] + ' [Bundle]',
+        label: row['Product Name'] + '\n<b>' + row['Metric Quantity'] + '</b>',
+        group: 'bundle',
+        level: 2,
+        shape: 'diamond',
+        font: { multi: 'html' },
+        color: {
+          background: '#B803FF',
+          border: '#B803FF',
+          highlight: {
+            border: '#B803FF',
+            background: '#B803FF',
+          },
+        },
+      }
+      if (!this.nodeExist(node)) {
+        this.nodes.push(node)
+      }
+    } else {
+      if (!this.nodeExist(product)) {
+        this.nodes.push(product)
+      }
+      if (!this.edgeExist(product, bundle)) {
+        this.edges.push({
+          from: product.id,
+          to: bundle.id,
+          label: row['Bundle Metric Contribution'],
+        })
+      }
     }
   }
   nodeExist(node) {
