@@ -72,7 +72,7 @@ const createWindow = () => {
           title: 'About',
           message: 'About LMT Explorer',
           detail:
-            'This tool is used to visualize and make simpler reading IBM License Metric Tool audit snapshot based on PVU sub-capacity metric.\nlink to the most recent realese and source code: https://github.com/tstopa/LMT-Explorer\nLicence: MIT\nAuthors: Kacper Szot, Michał Skoryk',
+            'This tool is used to visualize and make simpler reading IBM License Metric Tool audit snapshot based on PVU sub-capacity metric.\nLink to the most recent release and source code: https://github.com/tstopa/LMT-Explorer\nLicence: MIT\nAuthors: Kacper Szot, Michał Skoryk\nLMT Explorer is provided as-is, without any warranty and without official support. This is community project and not official IBM tool.',
         }
         dialog.showMessageBox(null, options, (response, checkboxChecked) => {
           console.log(response)

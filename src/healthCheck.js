@@ -67,7 +67,7 @@ class HealthCheck {
     importsPassing.classList.add(
       importsPassing.innerText == 'Yes' ? 'success' : 'warrning'
     )
-    coveredAllDiscavered.innerHTML =
+    coveredAllDiscavered.innerText =
       results['Used filters'].length == 0 ||
       (results['Used filters'].length == 1 &&
         results['Used filters'][0].includes(
@@ -78,7 +78,7 @@ class HealthCheck {
     coveredAllDiscavered.classList.add(
       coveredAllDiscavered.innerText == 'Yes' ? 'success' : 'warrning'
     )
-    licenceCalculationCover.innerHTML = results[
+    licenceCalculationCover.innerText = results[
       'Recalculation Status'
     ][0].includes('Recalculation is not needed')
       ? 'Yes'
@@ -86,7 +86,7 @@ class HealthCheck {
     licenceCalculationCover.classList.add(
       licenceCalculationCover.innerText == 'Yes' ? 'success' : 'warrning'
     )
-    delayedDataUpload.innerHTML = results['Data accuracy'][0]
+    delayedDataUpload.innerText = results['Data accuracy'][0]
       .split(':')[1]
       .trim()
     delayedDataUpload.classList.add(
@@ -96,7 +96,7 @@ class HealthCheck {
         ? 'warrning'
         : 'error'
     )
-    outDatedCapacityScans.innerHTML = results['Data accuracy'][1]
+    outDatedCapacityScans.innerText = results['Data accuracy'][1]
       .split(':')[1]
       .trim()
     outDatedCapacityScans.classList.add(
@@ -106,7 +106,7 @@ class HealthCheck {
         ? 'warrning'
         : 'error'
     )
-    missingSoftwareScans.innerHTML = results['Data accuracy'][2]
+    missingSoftwareScans.innerText = results['Data accuracy'][2]
       .split(':')[1]
       .trim()
     missingSoftwareScans.classList.add(
