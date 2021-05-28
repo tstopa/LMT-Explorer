@@ -17,7 +17,7 @@ This tool is used to visualize and make simpler reading [IBM License Metric Tool
 3. Then you will see 5 tabs and a navigation bar on the right. I am going to go through each of the tabs from left to right.
 4. On the first tab you can see a simple table with information about each product name, its name, and metric quantity.
 5. On the second tab you can see if there is something wrong with your audit snapshot. The first information is the dates of the first and last measurements taking. Then we can see if the snapshot includes all computers you have in license, will change color if not. Next is the ILMT version, which is green when right and yellow if a version is not one of the newest. The next information is about if we displayed all products in the file based on the filters we used. The next rubric displays if it did not miss a day in the timeline. The last three items of the table are very simple and mean exactly what they are named. First is displaying the percentage of computers that send data post set date. The second shows the percentage of computers that have capacity scans too late to count them and the last one is the percentage of computers that did not have scans performed.
-   ![alt text](./screen-shots/Status.png)
+   ![alt text](https://github.com/tstopa/LMT-Explorer/tree/feature/read-me/screen-shots/Status.PNG)
 6. Third tab we can see a visual presentation of provided audit snapshot, where:
 
 -   Green triangles are products
@@ -29,11 +29,11 @@ This tool is used to visualize and make simpler reading [IBM License Metric Tool
 8. You can pick every color shape, by clicking it and move it right and left, for easier analysis and an even better look.
 9. By clicking on circle all its connections will be highlighted.
 10. You can pick one (or more while holding CTRL) product and press the button on the right to see only selected products. They can be selected also on the search bar on the right. If you select one the view will zoom on it. If you want to go back to the view of all products simply press the Show All button.
-    ![alt text](./screen-shots/Diagram.png)
+    ![alt text](https://github.com/tstopa/LMT-Explorer/tree/feature/read-me/screen-shots/Diagram.PNG)
 11. On the fourth tab we can see a timeline of matric usage with the legend underneath it.
 12. If you hover over a line you will see all products of the same value of metric in the hovered day.
 13. If you want to see only one or a few products, select them on the right bar and press the Show Selected Products button. If you want to come back to all products simply press Show All button.
-    ![alt text](./screen-shots/Timeline.png)
+    ![alt text](./screen-shots/Timeline.PNG)
 14. The last tab presents relations between cloudpak and products.
 
 -   Purple squares are cloudpaks
